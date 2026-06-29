@@ -25,6 +25,7 @@ class DashboardController extends Controller
             'activeInvestment' => $activeInvestment,
             'vipPlans' => VipPlan::where('is_active', true)->get(),
             'notifications' => $user->notifications()->latest()->take(5)->get(),
+            'unreadNotificationsCount' => $user->notifications()->where('is_read', false)->count(),
             'pendingTransactions' => $pendingTransactions,
             'teamMembers' => $user->referrals()->get(),
         ]);

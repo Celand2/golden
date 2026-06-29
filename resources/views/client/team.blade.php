@@ -10,6 +10,13 @@
             </div>
             <a href="{{ route('client.dashboard') }}" class="inline-flex items-center rounded-3xl bg-slate-100 px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-200">Retour au dashboard</a>
         </div>
+        <div class="mt-6 rounded-3xl bg-slate-50 border border-slate-200 p-5">
+            <p class="text-sm uppercase text-slate-500">Lien de parrainage</p>
+            <div class="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center">
+                <input id="team-referral-link" readonly type="text" value="{{ $user->referral_link }}" class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900" />
+                <button id="copy-team-referral-link" type="button" data-copy-target="#team-referral-link" class="inline-flex items-center justify-center rounded-3xl bg-emerald-600 px-4 py-3 text-white transition hover:bg-emerald-700">Copier</button>
+            </div>
+        </div>
     </section>
 
     <section class="rounded-[32px] bg-white p-6 shadow-sm overflow-x-auto">

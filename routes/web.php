@@ -42,6 +42,15 @@ Route::middleware(['auth', 'is_client'])->prefix('dashboard')->group(function ()
     Route::get('/withdraw', [ClientTransactionController::class, 'showWithdrawForm'])->name('client.withdraw.form');
     Route::post('/withdraw', [ClientTransactionController::class, 'createWithdrawal'])->name('client.withdraw');
     Route::get('/team', [ClientDashboardController::class, 'team'])->name('client.team');
+    Route::get('/vip', [ClientDashboardController::class, 'showVipPlans'])->name('client.vip');
+    Route::get('/referral', [ClientDashboardController::class, 'team'])->name('client.referral');
+    Route::get('/support', fn () => redirect('https://wa.me/25700000000?text=Bonjour%20GoldenRise%20Invest'))->name('client.support');
+    Route::get('/active-vip', [ClientDashboardController::class, 'showVipPlans'])->name('client.active-vip');
+    Route::get('/statistics', [ClientDashboardController::class, 'index'])->name('client.statistics');
+    Route::get('/bonus', [ClientDashboardController::class, 'index'])->name('client.bonus');
+    Route::get('/news', [ClientDashboardController::class, 'index'])->name('client.news');
+    Route::get('/education', [ClientDashboardController::class, 'index'])->name('client.education');
+    Route::get('/settings', [ClientDashboardController::class, 'index'])->name('client.settings');
     Route::get('/vip-plans', [ClientDashboardController::class, 'showVipPlans'])->name('client.vip-plans');
     Route::post('/vip-plans/{vipPlan}/invest', [ClientDashboardController::class, 'investVipPlan'])->name('client.vip-plans.invest');
     Route::post('/claim', [ClientDashboardController::class, 'claimDailyGain'])->name('client.claim');
