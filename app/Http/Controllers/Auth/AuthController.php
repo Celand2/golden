@@ -18,12 +18,12 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $credentials = $request->validate([
-            'email' => 'required|email',
+            'phone' => 'required|string',
             'password' => 'required|string',
         ]);
 
         if (! Auth::attempt($credentials, $request->boolean('remember'))) {
-            return back()->withErrors(['email' => 'Identifiants invalides.']);
+            return back()->withErrors(['phone' => 'Identifiants invalides.']);
         }
 
         $request->session()->regenerate();
@@ -46,9 +46,8 @@ class AuthController extends Controller
     {
         $data = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|string|min:8|confirmed',
-            'phone' => 'nullable|string|max:50',
+            'phone' => 'required|string|unique:users,phone',
+            'password' => 'required|string|min:6|confirmed',
             'referral_code' => 'nullable|string|exists:users,referral_code',
         ]);
 
@@ -60,11 +59,35 @@ class AuthController extends Controller
 
         $user = User::create([
             'name' => $data['name'],
-            'email' => $data['email'],
+            'phone' => $data['phone'],
             'password' => Hash::make($data['password']),
-            'phone' => $data['phone'] ?? null,
             'referred_by' => $referrer?->id,
         ]);
+
+        // Incrémenter referral_count du parrain L1
+        if ($referrer) {
+            $referrer->increment('referral_count');
+
+            // Créer notification de nouveau filleul
+            \App\Models\Notification::create([
+                'user_id' => $referrer->id,
+                'type' => 'new_referral',
+                'title' => 'Nouveau filleul inscrit',
+                'message' => "{$user->name} ({$user->phone}) s'est inscrit avec votre code de parrainage!",
+            ]);
+
+            // Vérifier si le parrain atteint 30 filleuls et passer en Premium
+            if ($referrer->referral_count >= 30 && $referrer->role === 'standard') {
+                $referrer->update(['role' => 'premium']);
+
+                \App\Models\Notification::create([
+                    'user_id' => $referrer->id,
+                    'type' => 'premium_upgrade',
+                    'title' => 'Félicitations!',
+                    'message' => 'Vous êtes passé au statut Premium après avoir atteint 30 filleuls directs!',
+                ]);
+            }
+        }
 
         Auth::login($user);
 

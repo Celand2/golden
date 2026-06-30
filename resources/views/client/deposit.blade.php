@@ -1,8 +1,12 @@
 @extends('layouts.client')
 
 @section('content')
+<div class="flex justify-end"> <a href="{{ route('client.dashboard') }}" class="inline-flex items-center rounded-3xl bg-slate-100 px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-200">Retour au dashboard</a></div>
 <div class="mx-auto max-w-2xl rounded-3xl bg-white p-8 shadow-lg">
-    <h1 class="mb-6 text-2xl font-semibold text-slate-900">Faire un dépôt</h1>
+    <div class="flex justify-center items-center">
+        <h1 class="mb-6 text-2xl font-semibold text-slate-900">Faire un dépôt</h1>
+
+    </div>
 
     <div class="mb-6 rounded-3xl bg-slate-50 p-5 border border-slate-200">
         <p class="mb-2 text-sm uppercase tracking-[0.2em] text-slate-500">Coordonnées Lumicash</p>

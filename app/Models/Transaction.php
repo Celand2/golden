@@ -19,6 +19,10 @@ class Transaction extends Model
         'provider',
         'note',
         'payment_proof',
+        'proof_path',
+        'recipient_phone',
+        'recipient_name',
+        'rejection_reason',
     ];
 
     protected $casts = [

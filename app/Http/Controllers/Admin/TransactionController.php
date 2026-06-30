@@ -42,15 +42,18 @@ class TransactionController extends Controller
             abort(404);
         }
 
-        $transaction->status = 'rejected';
-        $transaction->note = $request->input('note');
-        $transaction->save();
+        $reason = $request->input('reason', 'Raison non spécifiée');
+
+        $transaction->update([
+            'status' => 'rejected',
+            'rejection_reason' => $reason,
+        ]);
 
         Notification::create([
             'user_id' => $transaction->user_id,
             'type' => 'deposit_rejected',
             'title' => 'Dépôt rejeté',
-            'message' => 'Votre dépôt a été rejeté par l’administration.',
+            'message' => "Votre dépôt a été rejeté. Raison: {$reason}",
         ]);
 
         return back()->with('success', 'Dépôt rejeté.');
@@ -64,21 +67,21 @@ class TransactionController extends Controller
 
         $user = $transaction->user;
 
-        if ($user->wallet_balance < $transaction->amount) {
-            return back()->withErrors(['amount' => 'Solde insuffisant.']);
+        // Vérifier le solde retirable (pas wallet_balance)
+        if ($user->withdrawable_balance < $transaction->amount) {
+            return back()->withErrors(['amount' => 'Solde retirable insuffisant.']);
         }
 
-        $transaction->status = 'approved';
-        $transaction->save();
+        // Déduire du solde retirable
+        $user->decrement('withdrawable_balance', $transaction->amount);
 
-        $user->wallet_balance -= $transaction->amount;
-        $user->save();
+        $transaction->update(['status' => 'approved']);
 
         Notification::create([
             'user_id' => $user->id,
             'type' => 'withdrawal_approved',
             'title' => 'Retrait approuvé',
-            'message' => "Votre retrait de {$transaction->amount} FBU a été approuvé.",
+            'message' => "Votre retrait de {$transaction->amount} FBU a été approuvé. Les fonds seront transférés à {$transaction->recipient_phone}.",
         ]);
 
         return back()->with('success', 'Retrait approuvé.');
@@ -90,15 +93,18 @@ class TransactionController extends Controller
             abort(404);
         }
 
-        $transaction->status = 'rejected';
-        $transaction->note = $request->input('note');
-        $transaction->save();
+        $reason = $request->input('reason', 'Raison non spécifiée');
+
+        $transaction->update([
+            'status' => 'rejected',
+            'rejection_reason' => $reason,
+        ]);
 
         Notification::create([
             'user_id' => $transaction->user_id,
             'type' => 'withdrawal_rejected',
             'title' => 'Retrait rejeté',
-            'message' => 'Votre demande de retrait a été rejetée.',
+            'message' => "Votre demande de retrait a été rejetée. Raison: {$reason}",
         ]);
 
         return back()->with('success', 'Retrait rejeté.');

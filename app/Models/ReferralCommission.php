@@ -13,10 +13,13 @@ class ReferralCommission extends Model
     protected $fillable = [
         'referrer_id',
         'referred_id',
+        'referred_user_id',
         'transaction_id',
         'level',
         'rate',
         'amount',
+        'commission_amount',
+        'deposit_amount',
     ];
 
     protected $casts = [

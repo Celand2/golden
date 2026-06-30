@@ -25,23 +25,21 @@ class UserController extends Controller
     {
         $data = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|string|min:8|confirmed',
-            'phone' => 'nullable|string|max:50',
+            'phone' => 'required|string|unique:users,phone',
+            'password' => 'required|string|min:6|confirmed',
             'role' => 'required|in:admin,standard,premium',
             'is_active' => 'nullable|boolean',
         ]);
 
         User::create([
             'name' => $data['name'],
-            'email' => $data['email'],
+            'phone' => $data['phone'],
             'password' => Hash::make($data['password']),
-            'phone' => $data['phone'] ?? null,
             'role' => $data['role'],
             'is_active' => $request->boolean('is_active', true),
         ]);
 
-        return redirect()->route('users.index')->with('success', 'Utilisateur créé.');
+        return redirect()->route('admin.users.index')->with('success', 'Utilisateur créé.');
     }
 
     public function edit(User $user)
@@ -55,16 +53,14 @@ class UserController extends Controller
     {
         $data = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,'.$user->id,
-            'password' => 'nullable|string|min:8|confirmed',
-            'phone' => 'nullable|string|max:50',
+            'phone' => 'required|string|unique:users,phone,'.$user->id,
+            'password' => 'nullable|string|min:6|confirmed',
             'role' => 'required|in:admin,standard,premium',
             'is_active' => 'nullable|boolean',
         ]);
 
         $user->name = $data['name'];
-        $user->email = $data['email'];
-        $user->phone = $data['phone'] ?? null;
+        $user->phone = $data['phone'];
         $user->role = $data['role'];
         $user->is_active = $request->boolean('is_active', true);
 
@@ -74,7 +70,7 @@ class UserController extends Controller
 
         $user->save();
 
-        return redirect()->route('users.index')->with('success', 'Utilisateur mis à jour.');
+        return redirect()->route('admin.users.index')->with('success', 'Utilisateur mis à jour.');
     }
 
     public function destroy(User $user)
@@ -82,5 +78,21 @@ class UserController extends Controller
         $user->delete();
 
         return redirect()->route('users.index')->with('success', 'Utilisateur supprimé.');
+    }
+
+    public function resetPassword(Request $request, User $user)
+    {
+        // Générer un mot de passe aléatoire de 8 caractères
+        $newPassword = \Illuminate\Support\Str::random(8);
+
+        // Hash et enregistrer
+        $user->update(['password' => Hash::make($newPassword)]);
+
+        // Retourner avec le mot de passe visible une seule fois
+        return back()->with('password_reset', [
+            'user_name' => $user->name,
+            'temporary_password' => $newPassword,
+            'message' => "Mot de passe réinitialisé pour {$user->name}. Communiquez ce mot de passe au user.",
+        ]);
     }
 }

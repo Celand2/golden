@@ -119,4 +119,70 @@ class DashboardController extends Controller
 
         return back()->with('success', 'Gain journalier crédité sur votre wallet.');
     }
+
+    public function showMyVips(Request $request)
+    {
+        $user = $request->user();
+        $investments = $user->investments()->orderBy('created_at', 'desc')->get();
+
+        return view('client.my-vips', [
+            'user' => $user,
+            'investments' => $investments,
+        ]);
+    }
+
+    public function claimInvestmentGains(Request $request, Investment $investment)
+    {
+        $user = $request->user();
+
+        // Vérifier que l'investment appartient à l'user
+        if ($investment->user_id !== $user->id) {
+            return back()->withErrors(['claim' => 'Accès non autorisé.']);
+        }
+
+        // Vérifier les conditions de claim
+        if ($investment->status !== 'active') {
+            return back()->withErrors(['claim' => 'Cet investment n\'est pas actif.']);
+        }
+
+        if ($investment->accumulated_gains <= 0) {
+            return back()->withErrors(['claim' => 'Aucun gain à réclamer pour ce VIP.']);
+        }
+
+        $amount = $investment->accumulated_gains;
+
+        // Transférer les gains vers withdrawable_balance
+        $user->increment('withdrawable_balance', $amount);
+
+        // Incrémenter total_claimed
+        $investment->increment('total_claimed', $amount);
+
+        // Remettre accumulated_gains à 0
+        $investment->update(['accumulated_gains' => 0]);
+
+        // Créer une entrée dans daily_claims
+        DailyClaim::create([
+            'user_id' => $user->id,
+            'investment_id' => $investment->id,
+            'amount_claimed' => $amount,
+        ]);
+
+        // Créer une transaction de type claim
+        Transaction::create([
+            'user_id' => $user->id,
+            'type' => 'claim',
+            'amount' => $amount,
+            'status' => 'approved',
+        ]);
+
+        // Notification
+        Notification::create([
+            'user_id' => $user->id,
+            'type' => 'daily_claim',
+            'title' => 'Gains réclamés',
+            'message' => "Vous avez réclamé {$amount} FBU du plan {$investment->vipPlan->name}.",
+        ]);
+
+        return back()->with('success', "Vous avez réclamé {$amount} FBU. Ces fonds sont maintenant dans votre portefeuille retirable.");
+    }
 }

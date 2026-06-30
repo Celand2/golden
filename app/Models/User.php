@@ -16,13 +16,13 @@ class User extends Authenticatable
 
     protected $fillable = [
         'name',
-        'email',
         'password',
         'phone',
         'referral_code',
         'referred_by',
         'role',
         'wallet_balance',
+        'withdrawable_balance',
         'referral_count',
         'is_active',
     ];
@@ -36,6 +36,7 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
         'wallet_balance' => 'decimal:2',
+        'withdrawable_balance' => 'decimal:2',
         'referral_count' => 'integer',
         'is_active' => 'boolean',
     ];
@@ -49,6 +50,14 @@ class User extends Authenticatable
                 } while (self::where('referral_code', $user->referral_code)->exists());
             }
         });
+    }
+
+    /**
+     * Utiliser 'phone' comme identifiant d'authentification au lieu de 'id'
+     */
+    public function getAuthIdentifierName(): string
+    {
+        return 'phone';
     }
 
     public function referrer(): BelongsTo

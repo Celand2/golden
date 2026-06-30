@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Admin\VipPlanController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Client\DashboardController as ClientDashboardController;
+use App\Http\Controllers\Client\NotificationController as ClientNotificationController;
 use App\Http\Controllers\Client\TransactionController as ClientTransactionController;
 use Illuminate\Support\Facades\Route;
 
@@ -26,6 +27,7 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->group(function () {
     Route::post('/lumicash', [AdminDashboardController::class, 'updateLumicash'])->name('admin.lumicash.update');
 
     Route::resource('users', AdminUserController::class)->except(['show'])->names('admin.users');
+    Route::post('users/{user}/reset-password', [AdminUserController::class, 'resetPassword'])->name('admin.users.reset-password');
     Route::resource('vip-plans', VipPlanController::class)->except(['create', 'edit', 'show'])->names('admin.vip-plans');
     Route::resource('transactions', AdminTransactionCrudController::class)->only(['index', 'destroy'])->names('admin.transactions');
 
@@ -45,7 +47,7 @@ Route::middleware(['auth', 'is_client'])->prefix('dashboard')->group(function ()
     Route::get('/vip', [ClientDashboardController::class, 'showVipPlans'])->name('client.vip');
     Route::get('/referral', [ClientDashboardController::class, 'team'])->name('client.referral');
     Route::get('/support', fn () => redirect('https://wa.me/25700000000?text=Bonjour%20GoldenRise%20Invest'))->name('client.support');
-    Route::get('/active-vip', [ClientDashboardController::class, 'showVipPlans'])->name('client.active-vip');
+    Route::get('/active-vip', [ClientDashboardController::class, 'showMyVips'])->name('client.active-vip');
     Route::get('/statistics', [ClientDashboardController::class, 'index'])->name('client.statistics');
     Route::get('/bonus', [ClientDashboardController::class, 'index'])->name('client.bonus');
     Route::get('/news', [ClientDashboardController::class, 'index'])->name('client.news');
@@ -54,4 +56,11 @@ Route::middleware(['auth', 'is_client'])->prefix('dashboard')->group(function ()
     Route::get('/vip-plans', [ClientDashboardController::class, 'showVipPlans'])->name('client.vip-plans');
     Route::post('/vip-plans/{vipPlan}/invest', [ClientDashboardController::class, 'investVipPlan'])->name('client.vip-plans.invest');
     Route::post('/claim', [ClientDashboardController::class, 'claimDailyGain'])->name('client.claim');
+    Route::post('/investments/{investment}/claim', [ClientDashboardController::class, 'claimInvestmentGains'])->name('client.investment.claim');
+    
+    // Notifications
+    Route::get('/notifications', [ClientNotificationController::class, 'index'])->name('client.notifications');
+    Route::post('/notifications/{notification}/read', [ClientNotificationController::class, 'markAsRead'])->name('client.notification.read');
+    Route::post('/notifications/read-all', [ClientNotificationController::class, 'markAllAsRead'])->name('client.notifications.read-all');
+    Route::post('/notifications/{notification}/delete', [ClientNotificationController::class, 'delete'])->name('client.notification.delete');
 });

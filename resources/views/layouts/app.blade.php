@@ -10,11 +10,15 @@
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.4/dist/tailwind.min.css">
     @endif
 </head>
-<body class="bg-slate-50 text-slate-900 min-h-screen">
+<body class="bg-slate-50 text-slate-900 min-h-screen gap-3">
     <div class="min-h-screen bg-slate-50">
-        <header class="bg-emerald-600 text-white shadow-sm">
+        <header class="bg-white-600 text-white shadow-sm">
             <div class="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
-                <a href="{{ url('/') }}" class="text-lg font-semibold">GoldenRise-INVEST</a>
+                <div>
+                    <div class="flex h-12 w-12 items-center justify-center rounded-3xl bg-white/20">
+                    <img src="{{ asset('assets/icons/logo.png') }}" alt="Logo" class="h-full w-full" />
+                </div>
+                </div>
                 <nav class="flex items-center gap-3 text-sm">
                     @auth
                         <span class="font-medium">{{ auth()->user()->name }}</span>
@@ -23,8 +27,8 @@
                             <button type="submit" class="rounded-md bg-white px-3 py-1 text-emerald-600">Déconnexion</button>
                         </form>
                     @else
-                        <a href="{{ route('login') }}" class="rounded-md bg-white px-3 py-1 text-emerald-600">Connexion</a>
-                        <a href="{{ route('register') }}" class="rounded-md border border-white px-3 py-1">Inscription</a>
+                        <a href="{{ route('login') }}" class="rounded-md bg-white px-3 py-1 text-emerald-600 border-emerald-600">Connexion</a>
+                        <a href="{{ route('register') }}" class="rounded-md border border-emerald-600 bg-emerald-600 px-3 py-1">Inscription</a>
                     @endauth
                 </nav>
             </div>
