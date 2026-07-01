@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1.2em" height="1.2em" viewBox="0 0 24 24">
+	<style>
+	.b567_h {
+	  fill: var(--svg-color--8fbffa, #8fbffa);
+	  d: path("M7 10v13h4V10zM5 23v-8.5H1V23zm8 0v-7h4v7zm6-10.5V23h4V12.5z");
+	}
+	
+	.bi12bs {
+	  fill: none;
+	  fill-rule: evenodd;
+	}
+	
+	.bjvvag {
+	  fill: var(--svg-color--2859c5, #2859c5);
+	  d: path("m9.916 3.65l-.85-.917l-.917.851l-7 6.5l1.702 1.832l6.084-5.65l5.649 6.085l.883.95l.917-.917l4-4L22 10l1-1V4h-5l-1 1l1.616 1.616L15.533 9.7z");
+	}
+	
+	</style>
+	<g clip-rule="evenodd" class="bi12bs">
+		<path class="b567_h" />
+		<path class="bjvvag" />
+	</g>
+</svg>

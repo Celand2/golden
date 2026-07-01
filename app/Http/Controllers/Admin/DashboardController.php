@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Investment;
+use App\Models\Notification;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Models\VipPlan;
@@ -22,6 +23,8 @@ class DashboardController extends Controller
             'totalDeposits' => Transaction::where('type', 'deposit')->where('status', 'approved')->sum('amount'),
             'totalWithdrawals' => Transaction::where('type', 'withdrawal')->where('status', 'approved')->sum('amount'),
             'activeInvestments' => Investment::where('status', 'active')->count(),
+            'unreadNotifications' => Notification::where('is_read', false)->count(),
+            'notificationsThisWeek' => Notification::where('created_at', '>=', now()->subWeek())->count(),
             'topReferrersThisWeek' => User::withCount(['referrals as weekly_referrals_count' => function ($query) {
                 $query->where('created_at', '>=', now()->subWeek());
             }])->having('weekly_referrals_count', '>', 0)->orderByDesc('weekly_referrals_count')->take(3)->get(),
