@@ -28,6 +28,8 @@ class DashboardController extends Controller
             'unreadNotificationsCount' => $user->notifications()->where('is_read', false)->count(),
             'pendingTransactions' => $pendingTransactions,
             'teamMembers' => $user->referrals()->get(),
+            'withdrawableBalance' => $user->withdrawable_balance,
+            'approvedDepositAmount' => $user->transactions()->where('type', 'deposit')->where('status', 'approved')->sum('amount'),
         ]);
     }
 
@@ -35,9 +37,23 @@ class DashboardController extends Controller
     {
         $user = $request->user();
 
+        $level1 = $user->referrals()->with('referrals.referrals')->get();
+        $level2 = $level1->flatMap(fn ($member) => $member->referrals)->unique('id')->values();
+        $level3 = $level2->flatMap(fn ($member) => $member->referrals)->unique('id')->values();
+
+        $commissionTotals = $user->referralCommissions()
+            ->whereIn('level', [1, 2, 3])
+            ->selectRaw('level, SUM(amount) as total')
+            ->groupBy('level')
+            ->pluck('total', 'level')
+            ->all();
+
         return view('client.team', [
             'user' => $user,
-            'teamMembers' => $user->referrals()->get(),
+            'level1' => $level1,
+            'level2' => $level2,
+            'level3' => $level3,
+            'commissionTotals' => $commissionTotals,
         ]);
     }
 
@@ -57,6 +73,10 @@ class DashboardController extends Controller
             return back()->withErrors(['vip' => 'Ce plan VIP n’est plus disponible.']);
         }
 
+        if ($user->investments()->where('vip_plan_id', $vipPlan->id)->where('status', 'active')->exists()) {
+            return back()->withErrors(['vip' => 'Vous ne pouvez pas investir deux fois dans le même plan VIP en même temps.']);
+        }
+
         if ($user->wallet_balance < $vipPlan->min_amount) {
             return back()->withErrors(['vip' => 'Solde insuffisant pour activer ce plan VIP. Déposez d’abord un montant suffisant.']);
         }
@@ -71,8 +91,7 @@ class DashboardController extends Controller
             'expires_at' => now()->addDays($vipPlan->duration_days),
         ]);
 
-        $user->wallet_balance -= $vipPlan->min_amount;
-        $user->save();
+        $user->decrement('wallet_balance', $vipPlan->min_amount);
 
         Notification::create([
             'user_id' => $user->id,

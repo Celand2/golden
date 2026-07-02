@@ -15,23 +15,23 @@
                 <p class="text-green-600 font-semibold">-Invest-</p>
             </div>
 
-            <button class="relative inline-flex h-12 w-12 items-center justify-center rounded-3xl bg-white/15">
+            <a href="{{ route('client.notifications') }}" class="relative inline-flex h-12 w-12 items-center justify-center rounded-3xl bg-white/15">
                 <img src="{{ asset('assets/icons/notification.svg') }}" alt="Notifications" class="h-6 w-6" />
                 @if($unreadNotificationsCount > 0)
                     <span class="absolute -right-1 -top-1 inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-semibold text-white">{{ $unreadNotificationsCount }}</span>
                 @endif
-            </button>
+            </a>
         </div>
     </section>
 
     <section class="grid grid-cols-2 gap-3" h-[110px]>
         <div class="rounded-[12px] bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-700 p-4 text-white shadow-lg">
             <p class="text-xs uppercase tracking-[0.2em] text-slate-300">Main Balance</p>
-            <p class="mt-3 text-2xl font-semibold">{{ number_format($user->wallet_balance, 0, ',', ' ') }} FBU</p>
+            <p class="mt-3 text-2xl font-semibold">{{ number_format($withdrawableBalance, 0, ',', ' ') }} FBU</p>
         </div>
         <div class="rounded-[12px] bg-white p-4 shadow-lg">
-            <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Total Deposit</p>
-            <p class="mt-3 text-2xl font-semibold text-slate-900">{{ number_format($user->transactions()->where('type', 'deposit')->where('status', 'approved')->sum('amount'), 0, ',', ' ') }} FBU</p>
+            <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Deposit</p>
+            <p class="mt-3 text-2xl font-semibold text-slate-900">{{ number_format($approvedDepositAmount, 0, ',', ' ') }} FBU</p>
         </div>
     </section>
 

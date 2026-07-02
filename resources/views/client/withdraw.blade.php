@@ -10,8 +10,12 @@
             <input type="number" name="amount" min="5000" value="{{ old('amount') }}" required class="w-full rounded-3xl border border-slate-200 px-4 py-3" />
         </div>
         <div>
-            <label class="mb-2 block text-sm font-medium text-slate-700">Téléphone Lumicash</label>
-            <input type="text" name="phone" value="{{ old('phone', $user->phone) }}" required class="w-full rounded-3xl border border-slate-200 px-4 py-3" />
+            <label class="mb-2 block text-sm font-medium text-slate-700">Nom du destinataire</label>
+            <input type="text" name="recipient_name" value="{{ old('recipient_name') }}" required class="w-full rounded-3xl border border-slate-200 px-4 py-3" />
+        </div>
+        <div>
+            <label class="mb-2 block text-sm font-medium text-slate-700">Téléphone du destinataire</label>
+            <input type="text" name="recipient_phone" value="{{ old('recipient_phone', $user->phone) }}" required class="w-full rounded-3xl border border-slate-200 px-4 py-3" />
         </div>
         <button type="submit" class="w-full rounded-3xl bg-emerald-600 px-4 py-3 text-white">Soumettre la demande</button>
     </form>
