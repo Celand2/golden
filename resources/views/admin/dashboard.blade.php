@@ -43,12 +43,15 @@
     </section>
 
     <section class="rounded-[32px] bg-white p-6 shadow-sm">
-        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <a href="{{ route('admin.vip-plans.index') }}" class="rounded-3xl border border-slate-200 bg-slate-50 p-5 text-center transition hover:-translate-y-0.5">
                 <p class="text-sm font-medium text-slate-700">Gérer les plans VIP</p>
             </a>
-            <a href="{{ route('admin.transactions.index') }}" class="rounded-3xl border border-slate-200 bg-slate-50 p-5 text-center transition hover:-translate-y-0.5">
-                <p class="text-sm font-medium text-slate-700">Voir les transactions</p>
+            <a href="{{ route('admin.deposits.index') }}" class="rounded-3xl border border-slate-200 bg-slate-50 p-5 text-center transition hover:-translate-y-0.5">
+                <p class="text-sm font-medium text-slate-700">Gérer les dépôts</p>
+            </a>
+            <a href="{{ route('admin.withdrawals.index') }}" class="rounded-3xl border border-slate-200 bg-slate-50 p-5 text-center transition hover:-translate-y-0.5">
+                <p class="text-sm font-medium text-slate-700">Gérer les retraits</p>
             </a>
             <a href="{{ route('admin.users.index') }}" class="rounded-3xl border border-slate-200 bg-slate-50 p-5 text-center transition hover:-translate-y-0.5">
                 <p class="text-sm font-medium text-slate-700">Gérer les utilisateurs</p>

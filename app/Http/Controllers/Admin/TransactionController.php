@@ -151,4 +151,46 @@ class TransactionController extends Controller
             $referrer = $referrer->referrer;
         }
     }
+
+    public function showWithdrawals()
+    {
+        return view('admin.withdrawals.index', [
+            'pendingWithdrawals' => Transaction::where('type', 'withdrawal')
+                ->where('status', 'pending')
+                ->with('user')
+                ->orderByDesc('created_at')
+                ->get(),
+            'approvedWithdrawals' => Transaction::where('type', 'withdrawal')
+                ->where('status', 'approved')
+                ->with('user')
+                ->orderByDesc('updated_at')
+                ->get(),
+            'rejectedWithdrawals' => Transaction::where('type', 'withdrawal')
+                ->where('status', 'rejected')
+                ->with('user')
+                ->orderByDesc('updated_at')
+                ->get(),
+        ]);
+    }
+
+    public function showDeposits()
+    {
+        return view('admin.deposits.index', [
+            'pendingDeposits' => Transaction::where('type', 'deposit')
+                ->where('status', 'pending')
+                ->with('user')
+                ->orderByDesc('created_at')
+                ->get(),
+            'approvedDeposits' => Transaction::where('type', 'deposit')
+                ->where('status', 'approved')
+                ->with('user')
+                ->orderByDesc('updated_at')
+                ->get(),
+            'rejectedDeposits' => Transaction::where('type', 'deposit')
+                ->where('status', 'rejected')
+                ->with('user')
+                ->orderByDesc('updated_at')
+                ->get(),
+        ]);
+    }
 }

@@ -56,6 +56,11 @@ class Investment extends Model
         return $this->status === 'expired' || $this->expires_at->isPast();
     }
 
+    public function isClaimable(): bool
+    {
+        return $this->status === 'active' && $this->accumulated_gains > 0;
+    }
+
     public function markExpired(): void
     {
         $this->status = 'expired';

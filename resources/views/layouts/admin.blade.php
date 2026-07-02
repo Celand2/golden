@@ -29,7 +29,8 @@
                         <a href="{{ route('admin.dashboard') }}" class="rounded-full px-3 py-2 hover:bg-white/10">Dashboard</a>
                         <a href="{{ route('admin.users.index') }}" class="rounded-full px-3 py-2 hover:bg-white/10">Utilisateurs</a>
                         <a href="{{ route('admin.vip-plans.index') }}" class="rounded-full px-3 py-2 hover:bg-white/10">Plans VIP</a>
-                        <a href="{{ route('admin.transactions.index') }}" class="rounded-full px-3 py-2 hover:bg-white/10">Transactions</a>
+                        <a href="{{ route('admin.deposits.index') }}" class="rounded-full px-3 py-2 hover:bg-white/10">Dépôts</a>
+                        <a href="{{ route('admin.withdrawals.index') }}" class="rounded-full px-3 py-2 hover:bg-white/10">Retraits</a>
                         <a href="{{ route('admin.notifications.index') }}" class="rounded-full px-3 py-2 hover:bg-white/10">Notifications</a>
                     </nav>
                     <div class="hidden gap-3 rounded-3xl bg-white/10 px-4 py-2 text-sm sm:flex items-center">
@@ -53,13 +54,11 @@
                     <a href="{{ route('admin.dashboard') }}" class="block rounded-2xl px-4 py-3 hover:bg-emerald-50">Dashboard</a>
                     <a href="{{ route('admin.users.index') }}" class="block rounded-2xl px-4 py-3 hover:bg-emerald-50">Utilisateurs</a>
                     <a href="{{ route('admin.vip-plans.index') }}" class="block rounded-2xl px-4 py-3 hover:bg-emerald-50">Plans VIP</a>
-                    <a href="{{ route('admin.transactions.index') }}" class="block rounded-2xl px-4 py-3 hover:bg-emerald-50">Transactions</a>
+                    <a href="{{ route('admin.deposits.index') }}" class="block rounded-2xl px-4 py-3 hover:bg-emerald-50">Dépôts</a>
+                    <a href="{{ route('admin.withdrawals.index') }}" class="block rounded-2xl px-4 py-3 hover:bg-emerald-50">Retraits</a>
                     <a href="{{ route('admin.notifications.index') }}" class="block rounded-2xl px-4 py-3 hover:bg-emerald-50">Notifications</a>
                 </nav>
-                <div class="mt-10 rounded-3xl bg-slate-50 p-4 text-sm text-slate-700">
-                    <p class="font-semibold text-slate-900">Contrôle total</p>
-                    <p class="mt-2 leading-6">Gérez les utilisateurs, les transactions, les plans VIP et les notifications depuis un seul espace.</p>
-                </div>
+               
             </aside>
 
             <main class="flex-1 px-4 py-6 sm:px-6">

@@ -38,8 +38,11 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->group(function () {
 
     Route::post('deposit/{transaction}/approve', [AdminTransactionController::class, 'approveDeposit'])->name('admin.deposit.approve');
     Route::post('deposit/{transaction}/reject', [AdminTransactionController::class, 'rejectDeposit'])->name('admin.deposit.reject');
+    Route::get('deposits', [AdminTransactionController::class, 'showDeposits'])->name('admin.deposits.index');
+    
     Route::post('withdrawal/{transaction}/approve', [AdminTransactionController::class, 'approveWithdrawal'])->name('admin.withdrawal.approve');
     Route::post('withdrawal/{transaction}/reject', [AdminTransactionController::class, 'rejectWithdrawal'])->name('admin.withdrawal.reject');
+    Route::get('withdrawals', [AdminTransactionController::class, 'showWithdrawals'])->name('admin.withdrawals.index');
 });
 
 Route::middleware(['auth', 'is_client'])->prefix('dashboard')->group(function () {

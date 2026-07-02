@@ -15,12 +15,8 @@ class ClaimService
     public function claimGains(Investment $investment): void
     {
         // Vérifier les conditions
-        if ($investment->status !== 'active') {
-            throw new \Exception('Cet investment n\'est pas actif');
-        }
-
-        if ($investment->accumulated_gains <= 0) {
-            throw new \Exception('Aucun gain à réclamer');
+        if (!$investment->isClaimable()) {
+            throw new \Exception('Cet investment n\'a pas de gains à réclamer');
         }
 
         $user = $investment->user;
