@@ -22,7 +22,7 @@
                         </svg>
                     </button>
                     <div class="flex items-center gap-3">
-                        <img src="{{ asset('assets/icons/images/logo.png') }}" alt="GoldenRise Logo" class="h-8 w-auto">
+                        <img src="{{ asset('assets/icons/logo.png') }}" alt="GoldenRise Logo" class="h-8 w-auto">
                         <a href="{{ route('admin.dashboard') }}" class="text-lg font-semibold tracking-tight">GoldenRise Admin</a>
                     </div>
                 </div>
