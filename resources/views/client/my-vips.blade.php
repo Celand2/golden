@@ -2,6 +2,7 @@
 
 @section('content')
 <div class="container mx-auto px-4 py-8">
+    <a href="{{ route('client.dashboard') }}" class="inline-flex items-center rounded-3xl bg-slate-100 px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-200 mb-6">Retour au dashboard</a>
     <h1 class="text-3xl font-bold mb-6">Mes VIP Actifs</h1>
 
     @if($investments->isEmpty())

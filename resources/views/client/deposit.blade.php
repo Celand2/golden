@@ -1,8 +1,9 @@
 @extends('layouts.client')
 
 @section('content')
-<div class="flex justify-end"> <a href="{{ route('client.dashboard') }}" class="inline-flex items-center rounded-3xl bg-slate-100 px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-200">Retour au dashboard</a></div>
-<div class="mx-auto max-w-2xl rounded-3xl bg-white p-8 shadow-lg">
+<div class="space-y-4 px-3 pb-24 pt-4">
+    <a href="{{ route('client.dashboard') }}" class="inline-flex items-center rounded-3xl bg-slate-100 px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-200">Retour au dashboard</a>
+    <div class="mx-auto max-w-2xl rounded-3xl bg-white p-8 shadow-lg">
     <div class="flex justify-center items-center">
         <h1 class="mb-6 text-2xl font-semibold text-slate-900">Faire un dépôt</h1>
 

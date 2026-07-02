@@ -1,8 +1,10 @@
 @extends('layouts.client')
 
 @section('content')
-<div class="mx-auto max-w-xl rounded-3xl bg-white p-8 shadow-lg">
-    <h1 class="mb-4 text-2xl font-semibold text-slate-900">Demande de retrait</h1>
+<div class="space-y-4 px-3 pb-24 pt-4">
+    <a href="{{ route('client.dashboard') }}" class="inline-flex items-center rounded-3xl bg-slate-100 px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-200">Retour au dashboard</a>
+    <div class="mx-auto max-w-xl rounded-3xl bg-white p-8 shadow-lg">
+        <h1 class="mb-4 text-2xl font-semibold text-slate-900">Demande de retrait</h1>
     <form method="POST" action="{{ route('client.withdraw') }}" class="space-y-5">
         @csrf
         <div>

@@ -24,7 +24,7 @@
         </div>
     </section>
 
-    <section class="grid grid-cols-2 gap-3" h-[110px]>
+    <section class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div class="rounded-[12px] bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-700 p-4 text-white shadow-lg">
             <p class="text-xs uppercase tracking-[0.2em] text-slate-300">Main Balance</p>
             <p class="mt-3 text-2xl font-semibold">{{ number_format($withdrawableBalance, 0, ',', ' ') }} FBU</p>
@@ -64,7 +64,6 @@
                 ['label' => 'Bonus', 'icon' => asset('assets/icons/bonus.svg'), 'route' => route('client.bonus')],
                 ['label' => 'News', 'icon' => asset('assets/icons/news.svg'), 'route' => route('client.news')],
                 ['label' => 'Education', 'icon' => asset('assets/icons/education.svg'), 'route' => route('client.education')],
-
             ];
         @endphp
 
@@ -79,46 +78,57 @@
     </section>
 
     <section class="grid gap-3">
-        <div class="rounded-[12px] bg-gradient-to-r from-violet-600 to-blue-600 p-4 text-white shadow-lg h-[70px]">
+        <a href="{{ route('client.weekly-challenge') }}" class="rounded-[12px] bg-gradient-to-r from-violet-600 to-blue-600 p-3 text-white shadow-lg hover:shadow-xl transition">
             <div class="flex items-center justify-between gap-3">
-                 <img src="{{ asset('assets/icons/challenge.svg') }}" alt="Challenge" class="h-12 w-12 rounded-3xl" />
-                <div>
-                      
-                    
-                    <h2 class="mt-2 text-base ">Complete tasks and win</h2>
+                <div class="flex items-center gap-3">
+                    <div class="flex h-10 w-10 items-center justify-center rounded-full bg-white/20">
+                        <img src="{{ asset('assets/icons/challenge.svg') }}" alt="Challenge" class="h-5 w-5" />
+                    </div>
+                    <div>
+                        <h2 class="text-sm font-semibold">Weekly Challenge</h2>
+                        <p class="text-xs text-white/80">Complete tasks & win</p>
+                    </div>
                 </div>
-                
-                
+                <div class="rounded-full bg-white/20 px-3 py-1.5 text-xs font-medium">
+                    View >
+                </div>
             </div>
-        </div>
+        </a>
 
-        <div class="rounded-[12px] bg-gradient-to-r from-emerald-600 to-slate-900 p-4 text-white shadow-lg">
-             <img src="{{ asset('assets/icons/mkopo.svg') }}" alt="Mkopo" class="h-6 w-6 rounded-3xl" />
+        <a href="{{ route('client.mkopo') }}" class="rounded-[12px] bg-gradient-to-r from-emerald-600 to-teal-600 p-3 text-white shadow-lg hover:shadow-xl transition">
             <div class="flex items-center justify-between gap-3">
-                <div>
-                    <p class="text-xs uppercase tracking-[0.2em] text-slate-200">Mkopo</p>
-                    
+                <div class="flex items-center gap-3">
+                    <div class="flex h-10 w-10 items-center justify-center rounded-full bg-white/20">
+                        <img src="{{ asset('assets/icons/mkopo.svg') }}" alt="Mkopo" class="h-5 w-5" />
+                    </div>
+                    <div>
+                        <h2 class="text-sm font-semibold">Mkopo - Comptes vérifiés</h2>
+                        <p class="text-xs text-white/80">Offres de prêts exclusives</p>
+                    </div>
                 </div>
-                
-        </div>
+                <div class="rounded-full bg-white/20 px-3 py-1.5 text-xs font-medium">
+                    Voir >
+                </div>
+            </div>
+        </a>
     </section>
 
-    <section class="fixed bottom-3 left-1/2 z-30 w-[calc(100%-1.5rem)] -translate-x-1/2 rounded-[28px] bg-slate-950/95 p-2 shadow-2xl backdrop-blur-sm">
-        <div class="grid grid-cols-5 gap-2">
+    <section class="fixed bottom-3 left-1/2 z-30 w-[calc(100%-1.5rem)] -translate-x-1/2 rounded-[28px] bg-white p-1.5 shadow-[0_4px_20px_rgba(0,0,0,0.5)] backdrop-blur-sm border-2 border-yellow-500">
+        <div class="grid grid-cols-5 gap-1">
             @php
                 $bottomNav = [
                     ['label' => 'Dashboard', 'icon' => asset('assets/icons/home.svg'), 'route' => route('client.dashboard')],
                     ['label' => 'VIP', 'icon' => asset('assets/icons/vip.svg'), 'route' => route('client.vip')],
-                    ['label' => 'Active VIP', 'icon' => asset('assets/icons/active-vip.svg'), 'route' => route('client.active-vip')],
+                    ['label' => 'Active VIP', 'icon' => asset('assets/icons/active-vip-new.svg'), 'route' => route('client.active-vip')],
                     ['label' => 'Team', 'icon' => asset('assets/icons/team.svg'), 'route' => route('client.team')],
-                    ['label' => 'Bonus', 'icon' => asset('assets/icons/bonus.svg'), 'route' => route('client.bonus')],
+                    ['label' => 'Settings', 'icon' => asset('assets/icons/settings-new.svg'), 'route' => route('client.settings')],
                 ];
             @endphp
 
             @foreach ($bottomNav as $item)
-                <a href="{{ $item['route'] }}" class="inline-flex flex-col items-center justify-center rounded-[10px] bg-slate-900 px-2 py-2 text-[10px] text-slate-300 transition hover:bg-slate-800 hover:text-white">
+                <a href="{{ $item['route'] }}" class="inline-flex flex-col items-center justify-center rounded-[10px] px-1.5 py-1.5 text-[10px] text-slate-700 transition hover:bg-slate-100">
                     <img src="{{ $item['icon'] }}" alt="{{ $item['label'] }}" class="h-5 w-5" />
-                    <span class="mt-1">{{ $item['label'] }}</span>
+                    <span class="mt-0.5">{{ $item['label'] }}</span>
                 </a>
             @endforeach
         </div>

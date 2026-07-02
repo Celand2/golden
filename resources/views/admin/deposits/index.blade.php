@@ -15,7 +15,7 @@
     <!-- Dépôts en attente -->
     <section class="rounded-[32px] bg-white p-6 shadow-sm">
         <h2 class="text-xl font-semibold text-slate-900 mb-5">Dépôts en Attente</h2>
-        <div class="overflow-hidden overflow-y-auto max-h-[600px]"><div class="overflow-x-auto">
+        <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-slate-200 text-sm">
                 <thead class="bg-slate-50 text-slate-700">
                     <tr>
@@ -56,13 +56,13 @@
                     @endforelse
                 </tbody>
             </table>
-        </div></div>
+        </div>
     </section>
 
     <!-- Dépôts approuvés -->
     <section class="rounded-[32px] bg-white p-6 shadow-sm">
         <h2 class="text-xl font-semibold text-slate-900 mb-5">Dépôts Approuvés</h2>
-        <div class="overflow-hidden overflow-y-auto max-h-[600px]"><div class="overflow-x-auto">
+        <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-slate-200 text-sm">
                 <thead class="bg-slate-50 text-slate-700">
                     <tr>
@@ -104,13 +104,13 @@
                     @endforelse
                 </tbody>
             </table>
-        </div></div>
+        </div>
     </section>
 
     <!-- Dépôts rejetés -->
     <section class="rounded-[32px] bg-white p-6 shadow-sm">
         <h2 class="text-xl font-semibold text-slate-900 mb-5">Dépôts Rejetés</h2>
-        <div class="overflow-hidden overflow-y-auto max-h-[600px]"><div class="overflow-x-auto">
+        <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-slate-200 text-sm">
                 <thead class="bg-slate-50 text-slate-700">
                     <tr>
@@ -144,7 +144,7 @@
                     @endforelse
                 </tbody>
             </table>
-        </div></div>
+        </div>
     </section>
 
     <!-- Modal de prévisualisation des preuves -->

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\NewsController as AdminNewsController;
 use App\Http\Controllers\Admin\NotificationController as AdminNotificationController;
 use App\Http\Controllers\Admin\TransactionController as AdminTransactionController;
 use App\Http\Controllers\Admin\TransactionCrudController as AdminTransactionCrudController;
@@ -43,6 +44,9 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->group(function () {
     Route::post('withdrawal/{transaction}/approve', [AdminTransactionController::class, 'approveWithdrawal'])->name('admin.withdrawal.approve');
     Route::post('withdrawal/{transaction}/reject', [AdminTransactionController::class, 'rejectWithdrawal'])->name('admin.withdrawal.reject');
     Route::get('withdrawals', [AdminTransactionController::class, 'showWithdrawals'])->name('admin.withdrawals.index');
+    
+    // News CRUD
+    Route::resource('news', AdminNewsController::class)->names('admin.news');
 });
 
 Route::middleware(['auth', 'is_client'])->prefix('dashboard')->group(function () {
@@ -56,11 +60,17 @@ Route::middleware(['auth', 'is_client'])->prefix('dashboard')->group(function ()
     Route::get('/referral', [ClientDashboardController::class, 'team'])->name('client.referral');
     Route::get('/support', fn () => redirect('https://wa.me/25700000000?text=Bonjour%20GoldenRise%20Invest'))->name('client.support');
     Route::get('/active-vip', [ClientDashboardController::class, 'showMyVips'])->name('client.active-vip');
-    Route::get('/statistics', [ClientDashboardController::class, 'index'])->name('client.statistics');
-    Route::get('/bonus', [ClientDashboardController::class, 'index'])->name('client.bonus');
-    Route::get('/news', [ClientDashboardController::class, 'index'])->name('client.news');
+    Route::get('/statistics', [ClientDashboardController::class, 'statistics'])->name('client.statistics');
+    Route::get('/bonus', [ClientDashboardController::class, 'bonus'])->name('client.bonus');
+    Route::post('/bonus/claim', [ClientDashboardController::class, 'claimBonus'])->name('client.bonus.claim');
+    Route::get('/news', [ClientDashboardController::class, 'news'])->name('client.news');
     Route::get('/education', [ClientDashboardController::class, 'index'])->name('client.education');
-    Route::get('/settings', [ClientDashboardController::class, 'index'])->name('client.settings');
+    Route::get('/weekly-challenge', [ClientDashboardController::class, 'weeklyChallenge'])->name('client.weekly-challenge');
+    Route::get('/mkopo', [ClientDashboardController::class, 'mkopo'])->name('client.mkopo');
+    Route::post('/mkopo/request', [ClientDashboardController::class, 'requestLoan'])->name('client.mkopo.request');
+    Route::get('/settings', [ClientDashboardController::class, 'settings'])->name('client.settings');
+    Route::put('/settings', [ClientDashboardController::class, 'updateSettings'])->name('client.settings.update');
+    Route::put('/settings/password', [ClientDashboardController::class, 'updatePassword'])->name('client.settings.password');
     Route::get('/vip-plans', [ClientDashboardController::class, 'showVipPlans'])->name('client.vip-plans');
     Route::post('/vip-plans/{vipPlan}/invest', [ClientDashboardController::class, 'investVipPlan'])->name('client.vip-plans.invest');
     Route::post('/claim', [ClientDashboardController::class, 'claimDailyGain'])->name('client.claim');

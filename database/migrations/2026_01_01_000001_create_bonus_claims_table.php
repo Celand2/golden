@@ -1,0 +1,27 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('bonus_claims', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->integer('level');
+            $table->decimal('amount', 15, 2);
+            $table->integer('referral_count');
+            $table->timestamps();
+
+            $table->unique(['user_id', 'level']);
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('bonus_claims');
+    }
+};

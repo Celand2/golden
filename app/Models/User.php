@@ -100,6 +100,16 @@ class User extends Authenticatable
         return $this->hasMany(DailyClaim::class);
     }
 
+    public function bonusClaims(): HasMany
+    {
+        return $this->hasMany(BonusClaim::class);
+    }
+
+    public function loans(): HasMany
+    {
+        return $this->hasMany(Loan::class);
+    }
+
     public function getReferralLinkAttribute(): string
     {
         return url('/register?ref='.$this->referral_code);

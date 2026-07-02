@@ -2,6 +2,7 @@
 
 @section('content')
 <div class="container mx-auto px-4 py-8">
+    <a href="{{ route('client.dashboard') }}" class="inline-flex items-center rounded-3xl bg-slate-100 px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-200 mb-6">Retour au dashboard</a>
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-3xl font-bold">Mes Notifications</h1>
         @if($unreadCount > 0)

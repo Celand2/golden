@@ -83,7 +83,7 @@
                 </nav>
             </aside>
 
-            <main class="flex-1 px-4 py-6 sm:px-6">
+            <main class="flex-1 overflow-hidden overflow-y-auto max-h-[calc(100vh-80px)] px-4 py-6 sm:px-6">
                 @if (session('success'))
                     <div class="mb-4 rounded-xl bg-emerald-100 border border-emerald-200 p-4 text-emerald-900">
                         {{ session('success') }}

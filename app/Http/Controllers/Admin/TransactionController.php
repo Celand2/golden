@@ -121,7 +121,7 @@ class TransactionController extends Controller
             }
 
             $amount = round($transaction->amount * $rate / 100, 2);
-            $referrer->wallet_balance += $amount;
+            $referrer->withdrawable_balance += $amount;
             $referrer->save();
 
             ReferralCommission::create([
