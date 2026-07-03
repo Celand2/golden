@@ -6,9 +6,17 @@ use App\Http\Controllers\Controller;
 use App\Models\Notification;
 use App\Models\Transaction;
 use App\Services\LumicashService;
+use App\Services\WithdrawalService;
 use Illuminate\Http\Request;
 
 class TransactionController extends Controller
+{
+    protected WithdrawalService $withdrawalService;
+
+    public function __construct(WithdrawalService $withdrawalService)
+    {
+        $this->withdrawalService = $withdrawalService;
+    }
 {
     public function showDepositForm(Request $request)
     {
@@ -72,22 +80,18 @@ class TransactionController extends Controller
             'recipient_phone' => 'required|string',
         ]);
 
-        $transaction = $request->user()->transactions()->create([
-            'type' => 'withdrawal',
-            'amount' => $request->input('amount'),
-            'status' => 'pending',
-            'phone' => $request->input('recipient_phone'),
-            'recipient_name' => $request->input('recipient_name'),
-            'provider' => 'lumicash',
-        ]);
+        try {
+            // Utiliser WithdrawalService pour tous les contrôles
+            $this->withdrawalService->createWithdrawalRequest(
+                user: $request->user(),
+                amount: (float) $request->input('amount'),
+                recipientPhone: $request->input('recipient_phone'),
+                recipientName: $request->input('recipient_name')
+            );
 
-        Notification::create([
-            'user_id' => $request->user()->id,
-            'type' => 'withdrawal_requested',
-            'title' => 'Retrait en attente',
-            'message' => "Votre demande de retrait de {$transaction->amount} FBU est en cours de traitement.",
-        ]);
-
-        return back()->with('success', 'Votre demande de retrait a été soumise.');
+            return back()->with('success', 'Votre demande de retrait a été soumise.');
+        } catch (\Exception $e) {
+            return back()->withErrors(['withdrawal' => $e->getMessage()]);
+        }
     }
 }

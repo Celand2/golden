@@ -2,35 +2,49 @@
 
 namespace App\Services;
 
-use Illuminate\Support\Arr;
+use App\Models\LumicashAccount;
 
 class LumicashService
 {
-    protected static function path(): string
-    {
-        return storage_path('app/lumicash.json');
-    }
-
+    /**
+     * Récupérer les données Lumicash depuis la BD
+     */
     public static function get(): array
     {
-        if (file_exists(self::path())) {
-            $content = file_get_contents(self::path());
-            return json_decode($content ?: '{}', true) ?: [];
+        $account = LumicashAccount::first();
+
+        if ($account) {
+            return [
+                'phone' => $account->phone,
+                'name' => $account->name,
+            ];
         }
 
+        // Fallback si aucun compte trouvé
         return [
             'phone' => env('LUMICASH_PHONE', ''),
             'name' => env('LUMICASH_NAME', ''),
         ];
     }
 
+    /**
+     * Mettre à jour les données Lumicash dans la BD
+     */
     public static function set(string $phone, string $name): void
     {
-        $data = [
-            'phone' => $phone,
-            'name' => $name,
-        ];
+        $account = LumicashAccount::first();
 
-        file_put_contents(self::path(), json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+        if ($account) {
+            $account->update([
+                'phone' => $phone,
+                'name' => $name,
+            ]);
+        } else {
+            LumicashAccount::create([
+                'phone' => $phone,
+                'name' => $name,
+            ]);
+        }
     }
 }
+

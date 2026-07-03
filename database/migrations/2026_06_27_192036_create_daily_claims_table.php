@@ -15,8 +15,8 @@ return new class extends Migration
         $table->id();
         $table->foreignId('user_id')->constrained()->cascadeOnDelete();
         $table->foreignId('investment_id')->constrained()->cascadeOnDelete();
-        $table->decimal('amount', 15, 2);  // montant réclamé
-        $table->timestamp('claimed_at');
+        $table->decimal('amount_claimed', 15, 2);  // montant réclamé
+        $table->timestamp('claimed_at')->useCurrent();
         $table->timestamps();
     });
 }
