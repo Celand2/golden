@@ -25,6 +25,16 @@ class TransactionController extends Controller
             'payment_proof' => 'required|image|mimes:jpg,jpeg,png,webp|max:5120',
         ]);
 
+        // Vérifier : MAX 1 dépôt pending par user
+        $existingPendingDeposit = $request->user()->transactions()
+            ->where('type', 'deposit')
+            ->where('status', 'pending')
+            ->exists();
+
+        if ($existingPendingDeposit) {
+            return back()->withErrors(['deposit' => 'Vous avez déjà une demande de dépôt en attente. Veuillez attendre son approbation ou son rejet.']);
+        }
+
         $lumicash = LumicashService::get();
         $proofPath = $request->file('payment_proof')->store('payment_proofs', 'public');
 

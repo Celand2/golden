@@ -29,7 +29,8 @@
                     <tr>
                         <th class="px-4 py-3 text-left font-semibold">Client</th>
                         <th class="px-4 py-3 text-left font-semibold">Montant</th>
-                        <th class="px-4 py-3 text-left font-semibold">Numéro Lumicash</th>
+                        <th class="px-4 py-3 text-left font-semibold">Après frais (5%)</th>
+                        <th class="px-4 py-3 text-left font-semibold">Récepteur</th>
                         <th class="px-4 py-3 text-left font-semibold">Crédité le</th>
                         <th class="px-4 py-3 text-center font-semibold">Actions</th>
                     </tr>
@@ -39,11 +40,17 @@
                         <tr>
                             <td class="px-4 py-3">{{ $transaction->user->name }}</td>
                             <td class="px-4 py-3 font-semibold text-slate-900">{{ number_format($transaction->amount, 0, ',', ' ') }} FBU</td>
-                            <td class="px-4 py-3">{{ $transaction->phone }}</td>
+                            <td class="px-4 py-3 font-semibold text-emerald-600">{{ number_format($transaction->amount_after_fees, 0, ',', ' ') }} FBU</td>
+                            <td class="px-4 py-3">
+                                <div class="text-xs">
+                                    <p class="font-semibold">{{ $transaction->recipient_name }}</p>
+                                    <p class="text-slate-500">{{ $transaction->recipient_phone }}</p>
+                                </div>
+                            </td>
                             <td class="px-4 py-3">{{ $transaction->created_at->format('d/m/Y H:i') }}</td>
                             <td class="px-4 py-3">
                                 <div class="flex flex-wrap gap-2 justify-center">
-                                    <button type="button" onclick="copyWithdrawalInfo('{{ $transaction->phone }}', '{{ $transaction->amount }}')" class="rounded-2xl bg-blue-100 px-3 py-2 text-blue-700 hover:bg-blue-200 text-xs">
+                                    <button type="button" onclick="copyWithdrawalInfo('{{ $transaction->recipient_phone }}', '{{ $transaction->amount }}', '{{ $transaction->recipient_name }}')" class="rounded-2xl bg-blue-100 px-3 py-2 text-blue-700 hover:bg-blue-200 text-xs">
                                         Copier info
                                     </button>
                                     <button type="button" data-open-modal="modal-withdrawal-{{ $transaction->id }}" class="rounded-2xl bg-slate-100 px-3 py-2 text-slate-700 hover:bg-slate-200 text-xs">
@@ -155,13 +162,22 @@
                 </div>
 
                 <div class="space-y-4 mb-6">
-                    <div class="rounded-3xl bg-slate-50 p-4">
-                        <p class="text-sm text-slate-500">Montant</p>
-                        <p class="mt-1 text-2xl font-semibold text-slate-900">{{ number_format($transaction->amount, 0, ',', ' ') }} FBU</p>
+                    <div class="grid gap-4 sm:grid-cols-2">
+                        <div class="rounded-3xl bg-slate-50 p-4">
+                            <p class="text-sm text-slate-500">Montant demandé</p>
+                            <p class="mt-1 text-xl font-semibold text-slate-900">{{ number_format($transaction->amount, 0, ',', ' ') }} FBU</p>
+                        </div>
+                        <div class="rounded-3xl bg-emerald-50 p-4">
+                            <p class="text-sm text-emerald-600">Après frais (5%)</p>
+                            <p class="mt-1 text-xl font-semibold text-emerald-900">{{ number_format($transaction->amount_after_fees, 0, ',', ' ') }} FBU</p>
+                        </div>
                     </div>
                     <div class="rounded-3xl bg-slate-50 p-4">
-                        <p class="text-sm text-slate-500">Numéro Lumicash</p>
-                        <p class="mt-1 font-semibold text-slate-900">{{ $transaction->phone }}</p>
+                        <p class="text-sm text-slate-500">Informations de réception</p>
+                        <div class="mt-2 space-y-1">
+                            <p class="font-semibold text-slate-900">{{ $transaction->recipient_name }}</p>
+                            <p class="text-slate-600">{{ $transaction->recipient_phone }}</p>
+                        </div>
                     </div>
                 </div>
 
@@ -185,8 +201,8 @@
     @endforeach
 
     <script>
-        function copyWithdrawalInfo(phone, amount) {
-            const text = `Numéro: ${phone}\nMontant: ${amount} FBU`;
+        function copyWithdrawalInfo(phone, amount, name) {
+            const text = `Nom: ${name}\nNuméro: ${phone}\nMontant: ${amount} FBU`;
             navigator.clipboard.writeText(text).then(() => {
                 alert('Informations copiées!');
             });
@@ -196,9 +212,11 @@
             const withdrawals = [
                 @foreach($pendingWithdrawals as $transaction)
                     {
-                        name: '{{ $transaction->user->name }}',
-                        phone: '{{ $transaction->phone }}',
-                        amount: {{ $transaction->amount }}
+                        userName: '{{ $transaction->user->name }}',
+                        recipientName: '{{ $transaction->recipient_name }}',
+                        recipientPhone: '{{ $transaction->recipient_phone }}',
+                        amount: {{ $transaction->amount }},
+                        amountAfterFees: {{ $transaction->amount_after_fees }}
                     },
                 @endforeach
             ];
@@ -211,9 +229,11 @@
             let text = 'RETRAITS EN ATTENTE\n';
             text += '==================\n\n';
             withdrawals.forEach((w, idx) => {
-                text += `${idx + 1}. ${w.name}\n`;
-                text += `   Numéro: ${w.phone}\n`;
-                text += `   Montant: ${w.amount} FBU\n\n`;
+                text += `${idx + 1}. Client: ${w.userName}\n`;
+                text += `   Destinataire: ${w.recipientName}\n`;
+                text += `   Numéro: ${w.recipientPhone}\n`;
+                text += `   Montant: ${w.amount} FBU\n`;
+                text += `   Après frais: ${w.amountAfterFees} FBU\n\n`;
             });
 
             navigator.clipboard.writeText(text).then(() => {

@@ -7,10 +7,18 @@ use App\Models\Notification;
 use App\Models\ReferralCommission;
 use App\Models\Transaction;
 use App\Models\User;
+use App\Services\WithdrawalService;
 use Illuminate\Http\Request;
 
 class TransactionController extends Controller
 {
+    protected $withdrawalService;
+
+    public function __construct(WithdrawalService $withdrawalService)
+    {
+        $this->withdrawalService = $withdrawalService;
+    }
+
     public function approveDeposit(Transaction $transaction)
     {
         if ($transaction->type !== 'deposit' || $transaction->status !== 'pending') {
@@ -59,34 +67,26 @@ class TransactionController extends Controller
         return back()->with('success', 'Dépôt rejeté.');
     }
 
+    /**
+     * Approuver un retrait
+     * Note: WithdrawalService gère le workflow (solde déjà déduit à la création)
+     */
     public function approveWithdrawal(Transaction $transaction)
     {
         if ($transaction->type !== 'withdrawal' || $transaction->status !== 'pending') {
             abort(404);
         }
 
-        $user = $transaction->user;
-
-        // Vérifier le solde retirable (pas wallet_balance)
-        if ($user->withdrawable_balance < $transaction->amount) {
-            return back()->withErrors(['amount' => 'Solde retirable insuffisant.']);
-        }
-
-        // Déduire du solde retirable
-        $user->decrement('withdrawable_balance', $transaction->amount);
-
-        $transaction->update(['status' => 'approved']);
-
-        Notification::create([
-            'user_id' => $user->id,
-            'type' => 'withdrawal_approved',
-            'title' => 'Retrait approuvé',
-            'message' => "Votre retrait de {$transaction->amount} FBU a été approuvé. Les fonds seront transférés à {$transaction->recipient_phone}.",
-        ]);
+        // Utiliser le service pour approuver
+        $this->withdrawalService->approveWithdrawal($transaction);
 
         return back()->with('success', 'Retrait approuvé.');
     }
 
+    /**
+     * Rejeter un retrait
+     * Note: WithdrawalService restaure le solde
+     */
     public function rejectWithdrawal(Request $request, Transaction $transaction)
     {
         if ($transaction->type !== 'withdrawal' || $transaction->status !== 'pending') {
@@ -95,17 +95,8 @@ class TransactionController extends Controller
 
         $reason = $request->input('reason', 'Raison non spécifiée');
 
-        $transaction->update([
-            'status' => 'rejected',
-            'rejection_reason' => $reason,
-        ]);
-
-        Notification::create([
-            'user_id' => $transaction->user_id,
-            'type' => 'withdrawal_rejected',
-            'title' => 'Retrait rejeté',
-            'message' => "Votre demande de retrait a été rejetée. Raison: {$reason}",
-        ]);
+        // Utiliser le service pour rejeter (restaure le solde)
+        $this->withdrawalService->rejectWithdrawal($transaction, $reason);
 
         return back()->with('success', 'Retrait rejeté.');
     }

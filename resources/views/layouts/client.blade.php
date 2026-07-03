@@ -11,7 +11,7 @@
     @endif
 </head>
 
-<body class="min-h-screen bg-slate-50 text-slate-900">
+<body class="min-h-screen bg-white text-slate-900">
     
         <!-- <header class="bg-white shadow-sm">
             <div class="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6">

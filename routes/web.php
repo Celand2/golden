@@ -4,7 +4,6 @@ use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\NewsController as AdminNewsController;
 use App\Http\Controllers\Admin\NotificationController as AdminNotificationController;
 use App\Http\Controllers\Admin\TransactionController as AdminTransactionController;
-use App\Http\Controllers\Admin\TransactionCrudController as AdminTransactionCrudController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Admin\VipPlanController;
 use App\Http\Controllers\Auth\AuthController;
@@ -31,7 +30,6 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->group(function () {
     Route::resource('users', AdminUserController::class)->except(['show'])->names('admin.users');
     Route::post('users/{user}/reset-password', [AdminUserController::class, 'resetPassword'])->name('admin.users.reset-password');
     Route::resource('vip-plans', VipPlanController::class)->except(['create', 'edit', 'show'])->names('admin.vip-plans');
-    Route::resource('transactions', AdminTransactionCrudController::class)->only(['index', 'edit', 'update', 'destroy'])->names('admin.transactions');
     Route::get('notifications', [AdminNotificationController::class, 'index'])->name('admin.notifications.index');
     Route::post('notifications/{notification}/read', [AdminNotificationController::class, 'markAsRead'])->name('admin.notifications.read');
     Route::post('notifications/read-all', [AdminNotificationController::class, 'markAllAsRead'])->name('admin.notifications.read-all');
