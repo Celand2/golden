@@ -21,6 +21,7 @@ class Investment extends Model
         'total_claimed',
         'status',
         'expires_at',
+          'last_accrual_at',
     ];
 
     protected $casts = [
@@ -29,7 +30,14 @@ class Investment extends Model
         'accumulated_gains' => 'decimal:2',
         'total_claimed' => 'decimal:2',
         'expires_at' => 'datetime',
+        'last_accrual_at' => 'datetime',
     ];
+
+public function nextAccrualDue(): Carbon
+{
+    return ($this->last_accrual_at ?? $this->created_at)->copy()->addHours(24);
+}
+
 
     public function user(): BelongsTo
     {

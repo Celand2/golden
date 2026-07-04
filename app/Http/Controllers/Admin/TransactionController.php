@@ -40,7 +40,9 @@ class TransactionController extends Controller
             abort(404);
         }
 
-        $reason = $request->input('reason', 'Raison non spécifiée');
+        $reason = $request->filled('reason')
+            ? $request->input('reason')
+            : 'Raison non spécifiée';
 
         try {
             // Utiliser DepositService pour rejeter

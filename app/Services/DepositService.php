@@ -6,6 +6,7 @@ use App\Models\Notification;
 use App\Models\ReferralCommission;
 use App\Models\Transaction;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 
 class DepositService
 {
@@ -18,38 +19,41 @@ class DepositService
             return;
         }
 
-        $user = $transaction->user;
-        $amount = $transaction->amount;
+        DB::transaction(function () use ($transaction) {
+            $user = $transaction->user;
+            $amount = $transaction->amount;
 
-        // Créditer wallet_balance
-        $user->increment('wallet_balance', $amount);
+            // Créditer wallet_balance
+            $user->increment('wallet_balance', $amount);
 
-        // Mettre à jour le statut de la transaction
-        $transaction->update(['status' => 'approved']);
+            // Mettre à jour le statut de la transaction
+            $transaction->update(['status' => 'approved']);
 
-        // Créer notification de dépôt approuvé
-        Notification::create([
-            'user_id' => $user->id,
-            'type' => 'deposit_approved',
-            'title' => 'Dépôt approuvé',
-            'message' => "Votre dépôt de {$amount} FBU a été approuvé. Votre solde portefeuille est maintenant de {$user->wallet_balance} FBU.",
-        ]);
+            // Créer notification de dépôt approuvé
+            Notification::create([
+                'user_id' => $user->id,
+                'type' => 'deposit_approved',
+                'title' => 'Dépôt approuvé',
+                'message' => "Votre dépôt de {$amount} FBU a été approuvé. Votre solde portefeuille est maintenant de {$user->wallet_balance} FBU.",
+            ]);
 
-        // Distribuer les commissions de parrainage
-        $this->distributeReferralCommissions($user, $amount);
+            // Distribuer les commissions de parrainage
+            $this->distributeReferralCommissions($user, $amount, $transaction);
 
-        // Vérifier si l'utilisateur L1 atteint 30 filleuls
-        $this->checkPremiumPromotion($user);
+            // Vérifier si l'utilisateur L1 atteint 30 filleuls
+            $this->checkPremiumPromotion($user);
+        });
     }
 
     /**
      * Rejeter un dépôt
      */
-    public function rejectDeposit(Transaction $transaction, string $reason): void
+    public function rejectDeposit(Transaction $transaction, ?string $reason = null): void
     {
         if ($transaction->type !== 'deposit' || $transaction->status === 'rejected') {
             return;
         }
+        $reason = $reason ?? 'Aucun motif fourni';
 
         $user = $transaction->user;
 
@@ -70,7 +74,7 @@ class DepositService
     /**
      * Distribuer les commissions de parrainage L1/L2/L3
      */
-    private function distributeReferralCommissions(User $user, float $amount): void
+    private function distributeReferralCommissions(User $user, float $amount, Transaction $transaction): void
     {
         $rates = [
             1 => 0.09, // L1: 9%
@@ -94,7 +98,7 @@ class DepositService
             ReferralCommission::create([
                 'referrer_id' => $referrer->id,
                 'referred_id' => $user->id,
-                'transaction_id' => null, // Sera rempli après création de la transaction
+                'transaction_id' => $transaction->id,
                 'level' => $level,
                 'rate' => $rates[$level] * 100, // Convertir en pourcentage (9, 2, 1)
                 'amount' => $commissionAmount,
