@@ -28,7 +28,7 @@ class NewsController extends Controller
             'is_published' => 'boolean',
         ]);
 
-        $validated['created_by'] = Auth::id();
+$validated['created_by'] = Auth::user()->id;
         
         if ($request->has('is_published') && !$request->has('published_at')) {
             $validated['published_at'] = now();
@@ -51,6 +51,8 @@ class NewsController extends Controller
             'content' => 'required|string',
             'is_published' => 'boolean',
         ]);
+
+        $validated['updated_by'] = Auth::user()->id;
 
         if ($request->has('is_published') && !$news->published_at) {
             $validated['published_at'] = now();
