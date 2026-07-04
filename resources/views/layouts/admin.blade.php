@@ -34,6 +34,7 @@
                         <a href="{{ route('admin.vip-plans.index') }}" class="rounded-full px-3 py-2 hover:bg-white/10">Plans VIP</a>
                         <a href="{{ route('admin.deposits.index') }}" class="rounded-full px-3 py-2 hover:bg-white/10">Dépôts</a>
                         <a href="{{ route('admin.withdrawals.index') }}" class="rounded-full px-3 py-2 hover:bg-white/10">Retraits</a>
+                        <a href="{{ route('admin.news.index') }}" class="block rounded-2xl px-4 py-3 hover:bg-emerald-50">Actualités</a>
                     </nav>
                     
                     <div class="flex items-center gap-3">

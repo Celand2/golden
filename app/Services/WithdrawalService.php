@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\DailyClaim;
 use App\Models\Notification;
 use App\Models\Transaction;
 use App\Models\User;
@@ -31,6 +32,13 @@ class WithdrawalService
         // Vérifier le minimum
         if ($amount < self::WITHDRAWAL_MIN_AMOUNT) {
             throw new \Exception('Montant minimum de retrait: '.self::WITHDRAWAL_MIN_AMOUNT.' FBU');
+        }
+
+        // Vérifier que l'utilisateur a déjà reçu au moins un gain journalier (preuve d'un investissement actif)
+        $hasDailyProfit = DailyClaim::where('user_id', $user->id)->exists();
+
+        if (! $hasDailyProfit) {
+            throw new \Exception('Vous devez avoir un investissement VIP actif et avoir réclamé au moins un gain journalier avant de pouvoir effectuer un retrait.');
         }
 
         // Transaction DB atomique pour éviter race condition
@@ -118,37 +126,35 @@ class WithdrawalService
      * SÉCURISÉ : Transaction atomique
      */
     public function rejectWithdrawal(Transaction $transaction, ?string $reason = null): void
-{
-    if ($transaction->type !== 'withdrawal' || $transaction->status !== 'pending') {
-        return;
+    {
+        if ($transaction->type !== 'withdrawal' || $transaction->status !== 'pending') {
+            return;
+        }
+
+        $reason = $reason ?? 'Aucun motif fourni';
+
+        DB::transaction(function () use ($transaction, $reason) {
+            $user = $transaction->user;
+            $amount = $transaction->amount;
+
+            // RESTAURER le montant au solde retirable (remboursement) - atomiquement
+            DB::table('users')
+                ->where('id', $user->id)
+                ->increment('withdrawable_balance', $amount);
+
+            // Mettre à jour le statut et la raison
+            $transaction->update([
+                'status' => 'rejected',
+                'rejection_reason' => $reason,
+            ]);
+
+            // Notification
+            Notification::create([
+                'user_id' => $user->id,
+                'type' => 'withdrawal_rejected',
+                'title' => 'Retrait rejeté',
+                'message' => "Votre demande de retrait de {$amount} FBU a été rejetée. Raison: {$reason}. Le montant a été restauré à votre solde retirable.",
+            ]);
+        });
     }
-
-    $reason = $reason ?? 'Aucun motif fourni';
-
-    DB::transaction(function () use ($transaction, $reason) {
-        $user = $transaction->user;
-        $amount = $transaction->amount;
-
-        // RESTAURER le montant au solde retirable (remboursement) - atomiquement
-        DB::table('users')
-            ->where('id', $user->id)
-            ->increment('withdrawable_balance', $amount);
-
-        // Mettre à jour le statut et la raison
-        $transaction->update([
-            'status' => 'rejected',
-            'rejection_reason' => $reason,
-        ]);
-
-        // Notification
-        Notification::create([
-            'user_id' => $user->id,
-            'type' => 'withdrawal_rejected',
-            'title' => 'Retrait rejeté',
-            'message' => "Votre demande de retrait de {$amount} FBU a été rejetée. Raison: {$reason}. Le montant a été restauré à votre solde retirable.",
-        ]);
-    });
 }
-}
-
-
