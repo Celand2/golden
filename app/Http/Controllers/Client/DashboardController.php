@@ -40,8 +40,8 @@ class DashboardController extends Controller
         $user = $request->user();
 
         $level1 = $user->referrals()->with('referrals.referrals')->get();
-        $level2 = $level1->flatMap(fn ($member) => $member->referrals)->unique('id')->values();
-        $level3 = $level2->flatMap(fn ($member) => $member->referrals)->unique('id')->values();
+        $level2 = $level1->flatMap(fn($member) => $member->referrals)->unique('id')->values();
+        $level3 = $level2->flatMap(fn($member) => $member->referrals)->unique('id')->values();
 
         $commissionTotals = $user->referralCommissions()
             ->whereIn('level', [1, 2, 3])
@@ -75,9 +75,9 @@ class DashboardController extends Controller
             return back()->withErrors(['vip' => 'Ce plan VIP n’est plus disponible.']);
         }
 
-        // Vérifier si l'utilisateur a déjà un VIP actif (peu importe le plan)
-        if ($user->investments()->where('status', 'active')->exists()) {
-            return back()->withErrors(['vip' => 'Vous ne pouvez pas avoir plus d\'un plan VIP actif à la fois.']);
+        // Vérifier si l'utilisateur a déjà CE plan VIP actif (les autres plans restent autorisés)
+        if ($user->investments()->where('vip_plan_id', $vipPlan->id)->where('status', 'active')->exists()) {
+            return back()->withErrors(['vip' => 'Vous avez déjà ce plan VIP actif. Vous pourrez le racheter une fois celui-ci terminé, ou choisir un autre plan.']);
         }
 
         if ($user->wallet_balance < $vipPlan->min_amount) {
@@ -105,6 +105,9 @@ class DashboardController extends Controller
 
         return back()->with('success', 'VIP activé avec succès. Votre solde a été débité.');
     }
+
+
+
 
     public function claimDailyGain(Request $request)
     {
@@ -152,16 +155,26 @@ class DashboardController extends Controller
         return back()->with('success', 'Gain journalier crédité sur votre Main Balance.');
     }
 
-    public function showMyVips(Request $request)
-    {
-        $user = $request->user();
-        $investments = $user->investments()->orderBy('created_at', 'desc')->get();
+   public function showMyVips(Request $request)
+{
+    $user = $request->user();
+    $investments = $user->investments()->orderBy('created_at', 'desc')->get();
 
-        return view('client.my-vips', [
-            'user' => $user,
-            'investments' => $investments,
-        ]);
+    foreach ($investments as $investment) {
+        $lastClaim = DailyClaim::where('investment_id', $investment->id)
+            ->latest('claimed_at')
+            ->first();
+
+        $investment->next_claim_at = $lastClaim
+            ? $lastClaim->claimed_at->addHours(24)
+            : null;
     }
+
+    return view('client.my-vips', [
+        'user' => $user,
+        'investments' => $investments,
+    ]);
+}
 
     public function claimInvestmentGains(Request $request, Investment $investment)
     {
@@ -394,7 +407,7 @@ class DashboardController extends Controller
         $activeReferrals = $user->referrals()
             ->whereHas('activeInvestments')
             ->count();
-        
+
         $totalCommission = $user->referralCommissions()->sum('amount');
 
         return view('client.statistics', [
@@ -415,10 +428,10 @@ class DashboardController extends Controller
 
         // Get top 3 referrers of the week (by number of new referrals this week)
         $startOfWeek = now()->startOfWeek();
-        
+
         $topReferrers = \App\Models\User::whereHas('referrals', function ($query) use ($startOfWeek) {
-                $query->where('created_at', '>=', $startOfWeek);
-            })
+            $query->where('created_at', '>=', $startOfWeek);
+        })
             ->withCount(['referrals as week_referrals_count' => function ($query) use ($startOfWeek) {
                 $query->where('created_at', '>=', $startOfWeek);
             }])

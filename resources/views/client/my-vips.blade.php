@@ -43,15 +43,22 @@
                             <span class="font-medium">Total réclamé:</span>
                             <span>{{ number_format($investment->total_claimed, 2) }} FBU</span>
                         </div>
-                        <div class="flex justify-between">
-                            <span class="font-medium">Expire le:</span>
-                            <span>{{ $investment->expires_at->format('d/m/Y') }}</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="font-medium">Jours restants:</span>
-                            <span>{{ $investment->expires_at->diffInDays(now()) }} jours</span>
-                        </div>
                     </div>
+
+                    <!-- Countdown avant prochain claim -->
+                    @if($investment->status === 'active')
+                        <div class="mb-4 text-center">
+                            @if($investment->next_claim_at && $investment->next_claim_at->isFuture())
+                                <p class="text-xs text-gray-500 mb-1">Prochain claim dans :</p>
+                                <p class="text-lg font-bold text-blue-600 countdown-timer" 
+                                   data-target="{{ $investment->next_claim_at->timestamp }}">
+                                    --:--:--
+                                </p>
+                            @else
+                                <p class="text-sm font-semibold text-green-600">✅ Claim disponible maintenant</p>
+                            @endif
+                        </div>
+                    @endif
 
                     <!-- Claim Button -->
                     @if($investment->status === 'active' && $investment->accumulated_gains > 0)
@@ -91,5 +98,40 @@
         {{ session('success') }}
     </div>
 @endif
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const timers = document.querySelectorAll('.countdown-timer');
+
+    timers.forEach(function (el) {
+        const targetTimestamp = parseInt(el.dataset.target, 10) * 1000; // en ms
+
+        function update() {
+            const now = Date.now();
+            const diff = targetTimestamp - now;
+
+            if (diff <= 0) {
+                el.textContent = 'Disponible maintenant';
+                el.classList.remove('text-blue-600');
+                el.classList.add('text-green-600');
+                clearInterval(interval);
+                return;
+            }
+
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+            el.textContent = 
+                String(hours).padStart(2, '0') + ':' +
+                String(minutes).padStart(2, '0') + ':' +
+                String(seconds).padStart(2, '0');
+        }
+
+        update();
+        const interval = setInterval(update, 1000);
+    });
+});
+</script>
 
 @endsection

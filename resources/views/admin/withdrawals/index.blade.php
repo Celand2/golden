@@ -50,18 +50,33 @@
                             <td class="px-4 py-3">{{ $transaction->created_at->format('d/m/Y H:i') }}</td>
                             <td class="px-4 py-3">
                                 <div class="flex flex-wrap gap-2 justify-center">
+                                    <!-- Copier -->
                                     <button type="button" onclick="copyWithdrawalInfo('{{ $transaction->recipient_phone }}', '{{ $transaction->amount }}', '{{ $transaction->recipient_name }}')" class="rounded-2xl bg-blue-100 px-3 py-2 text-blue-700 hover:bg-blue-200 text-xs">
-                                        Copier info
+                                        Copier
                                     </button>
-                                    <button type="button" data-open-modal="modal-withdrawal-{{ $transaction->id }}" class="rounded-2xl bg-slate-100 px-3 py-2 text-slate-700 hover:bg-slate-200 text-xs">
-                                        Actions
-                                    </button>
+
+                                    <!-- Approuver -->
+                                    <form method="POST" action="{{ route('admin.withdrawal.approve', $transaction) }}">
+                                        @csrf
+                                        <button type="submit" onclick="return confirm('Approuver ce retrait ?')" class="rounded-2xl bg-emerald-100 px-3 py-2 text-emerald-700 hover:bg-emerald-200 text-xs">
+                                            Approuver
+                                        </button>
+                                    </form>
+
+                                    <!-- Rejeter -->
+                                    <form method="POST" action="{{ route('admin.withdrawal.reject', $transaction) }}" onsubmit="return addRejectReason(this)">
+                                        @csrf
+                                        <input type="hidden" name="reason" value="">
+                                        <button type="submit" class="rounded-2xl bg-red-100 px-3 py-2 text-red-700 hover:bg-red-200 text-xs">
+                                            Rejeter
+                                        </button>
+                                    </form>
                                 </div>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="px-4 py-6 text-center text-slate-500">Aucun retrait en attente.</td>
+                            <td colspan="6" class="px-4 py-6 text-center text-slate-500">Aucun retrait en attente.</td>
                         </tr>
                     @endforelse
                 </tbody>
@@ -149,57 +164,6 @@
         </div>
     </section>
 
-    <!-- Modals pour actions -->
-    @foreach($pendingWithdrawals as $transaction)
-        <div id="modal-withdrawal-{{ $transaction->id }}" class="hidden fixed inset-0 z-50 overflow-y-auto bg-slate-900/50 px-4 py-10">
-            <div class="mx-auto max-w-2xl rounded-3xl bg-white p-6 shadow-2xl">
-                <div class="flex items-center justify-between gap-4 mb-6">
-                    <div>
-                        <h2 class="text-xl font-semibold text-slate-900">Retrait #{{ $transaction->id }}</h2>
-                        <p class="text-sm text-slate-500">{{ $transaction->user->name }}</p>
-                    </div>
-                    <button type="button" data-close-modal="modal-withdrawal-{{ $transaction->id }}" class="rounded-full bg-slate-100 px-3 py-2 text-slate-700">✕</button>
-                </div>
-
-                <div class="space-y-4 mb-6">
-                    <div class="grid gap-4 sm:grid-cols-2">
-                        <div class="rounded-3xl bg-slate-50 p-4">
-                            <p class="text-sm text-slate-500">Montant demandé</p>
-                            <p class="mt-1 text-xl font-semibold text-slate-900">{{ number_format($transaction->amount, 0, ',', ' ') }} FBU</p>
-                        </div>
-                        <div class="rounded-3xl bg-emerald-50 p-4">
-                            <p class="text-sm text-emerald-600">Après frais (5%)</p>
-                            <p class="mt-1 text-xl font-semibold text-emerald-900">{{ number_format($transaction->amount_after_fees, 0, ',', ' ') }} FBU</p>
-                        </div>
-                    </div>
-                    <div class="rounded-3xl bg-slate-50 p-4">
-                        <p class="text-sm text-slate-500">Informations de réception</p>
-                        <div class="mt-2 space-y-1">
-                            <p class="font-semibold text-slate-900">{{ $transaction->recipient_name }}</p>
-                            <p class="text-slate-600">{{ $transaction->recipient_phone }}</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="grid gap-3 sm:grid-cols-2">
-                    <form method="POST" action="{{ route('admin.withdrawal.approve', $transaction) }}">
-                        @csrf
-                        <button type="submit" class="w-full rounded-3xl bg-emerald-600 px-5 py-3 text-white font-semibold hover:bg-emerald-700">
-                            Approuver
-                        </button>
-                    </form>
-                    <form method="POST" action="{{ route('admin.withdrawal.reject', $transaction) }}" class="space-y-3">
-                        @csrf
-                        <textarea name="note" rows="2" placeholder="Raison du rejet" class="w-full rounded-3xl border border-slate-200 px-4 py-3 text-sm"></textarea>
-                        <button type="submit" class="w-full rounded-3xl bg-red-600 px-5 py-3 text-white font-semibold hover:bg-red-700">
-                            Rejeter
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    @endforeach
-
     <script>
         function copyWithdrawalInfo(phone, amount, name) {
             const text = `Nom: ${name}\nNuméro: ${phone}\nMontant: ${amount} FBU`;
@@ -241,28 +205,16 @@
             });
         }
 
-        document.querySelectorAll('[data-open-modal]').forEach(button => {
-            button.addEventListener('click', () => {
-                const modal = document.getElementById(button.dataset.openModal);
-                modal?.classList.remove('hidden');
-            });
-        });
-
-        document.querySelectorAll('[data-close-modal]').forEach(button => {
-            button.addEventListener('click', () => {
-                const modal = document.getElementById(button.dataset.closeModal);
-                modal?.classList.add('hidden');
-            });
-        });
-
-        // Fermer modal en cliquant dehors
-        document.querySelectorAll('[id^="modal-withdrawal-"]').forEach(modal => {
-            modal.addEventListener('click', function(e) {
-                if (e.target === this) {
-                    this.classList.add('hidden');
-                }
-            });
-        });
+        // Demande la raison du rejet avant de soumettre le formulaire
+        function addRejectReason(form) {
+            const reason = prompt('Raison du rejet (optionnel):', '');
+            if (reason === null) {
+                // L'admin a annulé le prompt -> on annule l'envoi du formulaire
+                return false;
+            }
+            form.querySelector('input[name="reason"]').value = reason || 'Raison non spécifiée';
+            return true;
+        }
     </script>
 </div>
 @endsection

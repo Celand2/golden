@@ -25,7 +25,7 @@ class WithdrawalService
         // Vérifier les horaires (7h-21h)
         $now = Carbon::now();
         if ($now->hour < self::WITHDRAWAL_START_HOUR || $now->hour >= self::WITHDRAWAL_END_HOUR) {
-            throw new \Exception("Les retraits ne sont disponibles que de {self::WITHDRAWAL_START_HOUR}h à {self::WITHDRAWAL_END_HOUR}h.");
+            throw new \Exception('Les retraits ne sont disponibles que de '.self::WITHDRAWAL_START_HOUR.'h à '.self::WITHDRAWAL_END_HOUR.'h.');
         }
 
         // Vérifier le minimum
@@ -117,36 +117,38 @@ class WithdrawalService
      * IMPORTANT : Restaurer le solde immédiatement
      * SÉCURISÉ : Transaction atomique
      */
-    public function rejectWithdrawal(Transaction $transaction, string $reason): void
-    {
-        if ($transaction->type !== 'withdrawal' || $transaction->status !== 'pending') {
-            return;
-        }
-
-        DB::transaction(function () use ($transaction, $reason) {
-            $user = $transaction->user;
-            $amount = $transaction->amount;
-
-            // RESTAURER le montant au solde retirable (remboursement) - atomiquement
-            DB::table('users')
-                ->where('id', $user->id)
-                ->increment('withdrawable_balance', $amount);
-
-            // Mettre à jour le statut et la raison
-            $transaction->update([
-                'status' => 'rejected',
-                'rejection_reason' => $reason,
-            ]);
-
-            // Notification
-            Notification::create([
-                'user_id' => $user->id,
-                'type' => 'withdrawal_rejected',
-                'title' => 'Retrait rejeté',
-                'message' => "Votre demande de retrait de {$amount} FBU a été rejetée. Raison: {$reason}. Le montant a été restauré à votre solde retirable.",
-            ]);
-        });
+    public function rejectWithdrawal(Transaction $transaction, ?string $reason = null): void
+{
+    if ($transaction->type !== 'withdrawal' || $transaction->status !== 'pending') {
+        return;
     }
+
+    $reason = $reason ?? 'Aucun motif fourni';
+
+    DB::transaction(function () use ($transaction, $reason) {
+        $user = $transaction->user;
+        $amount = $transaction->amount;
+
+        // RESTAURER le montant au solde retirable (remboursement) - atomiquement
+        DB::table('users')
+            ->where('id', $user->id)
+            ->increment('withdrawable_balance', $amount);
+
+        // Mettre à jour le statut et la raison
+        $transaction->update([
+            'status' => 'rejected',
+            'rejection_reason' => $reason,
+        ]);
+
+        // Notification
+        Notification::create([
+            'user_id' => $user->id,
+            'type' => 'withdrawal_rejected',
+            'title' => 'Retrait rejeté',
+            'message' => "Votre demande de retrait de {$amount} FBU a été rejetée. Raison: {$reason}. Le montant a été restauré à votre solde retirable.",
+        ]);
+    });
+}
 }
 
 

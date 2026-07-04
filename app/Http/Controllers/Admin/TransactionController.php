@@ -74,19 +74,24 @@ class TransactionController extends Controller
      * Note: WithdrawalService restaure le solde
      */
     public function rejectWithdrawal(Request $request, Transaction $transaction)
-    {
-        if ($transaction->type !== 'withdrawal' || $transaction->status !== 'pending') {
-            abort(404);
-        }
+{
+    if ($transaction->type !== 'withdrawal' || $transaction->status !== 'pending') {
+        abort(404);
+    }
 
-        $reason = $request->input('reason', 'Raison non spécifiée');
+    $reason = $request->filled('reason')
+        ? $request->input('reason')
+        : 'Raison non spécifiée';
 
+    try {
         // Utiliser le service pour rejeter (restaure le solde)
         $this->withdrawalService->rejectWithdrawal($transaction, $reason);
 
         return back()->with('success', 'Retrait rejeté.');
+    } catch (\Exception $e) {
+        return back()->withErrors(['error' => $e->getMessage()]);
     }
-
+}
     public function showWithdrawals()
     {
         return view('admin.withdrawals.index', [

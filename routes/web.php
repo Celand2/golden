@@ -56,7 +56,7 @@ Route::middleware(['auth', 'is_client'])->prefix('dashboard')->group(function ()
     Route::get('/team', [ClientDashboardController::class, 'team'])->name('client.team');
     Route::get('/vip', [ClientDashboardController::class, 'showVipPlans'])->name('client.vip');
     Route::get('/referral', [ClientDashboardController::class, 'team'])->name('client.referral');
-    Route::get('/support', fn () => redirect('https://wa.me/25700000000?text=Bonjour%20GoldenRise%20Invest'))->name('client.support');
+    Route::get('/support', fn () => redirect('https://chat.whatsapp.com/BZ3zXQtwgG1E7zS2K48ecD'))->name('client.support');
     Route::get('/active-vip', [ClientDashboardController::class, 'showMyVips'])->name('client.active-vip');
     Route::get('/statistics', [ClientDashboardController::class, 'statistics'])->name('client.statistics');
     Route::get('/bonus', [ClientDashboardController::class, 'bonus'])->name('client.bonus');
@@ -80,3 +80,12 @@ Route::middleware(['auth', 'is_client'])->prefix('dashboard')->group(function ()
     Route::post('/notifications/read-all', [ClientNotificationController::class, 'markAllAsRead'])->name('client.notifications.read-all');
     Route::post('/notifications/{notification}/delete', [ClientNotificationController::class, 'delete'])->name('client.notification.delete');
 });
+Route::get('/cron/process-daily-gains', function (\Illuminate\Http\Request $request) {
+    if ($request->query('token') !== config('app.cron_secret_token')) {
+        abort(403);
+    }
+
+    Artisan::call('process:daily-gains');
+
+    return response(Artisan::output(), 200)->header('Content-Type', 'text/plain');
+})->name('cron.daily-gains');
