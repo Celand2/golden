@@ -9,15 +9,15 @@ use App\Services\LumicashService;
 use App\Services\WithdrawalService;
 use Illuminate\Http\Request;
 
-class TransactionController extends Controller
-{
+class TransactionController extends Controller{ 
+
     protected WithdrawalService $withdrawalService;
 
     public function __construct(WithdrawalService $withdrawalService)
     {
         $this->withdrawalService = $withdrawalService;
     }
-{
+
     public function showDepositForm(Request $request)
     {
         return view('client.deposit', [

@@ -149,7 +149,4 @@ class WithdrawalService
     }
 }
 
-            'message' => "Votre retrait a été rejeté. Raison: {$reason}",
-        ]);
-    }
-}
+
