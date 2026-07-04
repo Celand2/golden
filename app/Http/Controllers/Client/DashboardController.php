@@ -39,25 +39,25 @@ class DashboardController extends Controller
     {
         $user = $request->user();
 
-        $level1 = $user->referrals()->with('referrals.referrals')->get();
-        $level2 = $level1->flatMap(fn($member) => $member->referrals)->unique('id')->values();
-        $level3 = $level2->flatMap(fn($member) => $member->referrals)->unique('id')->values();
+        $level1 = $user->referrals()->get();
 
-        $commissionTotals = $user->referralCommissions()
-            ->whereIn('level', [1, 2, 3])
-            ->selectRaw('level, SUM(amount) as total')
-            ->groupBy('level')
-            ->pluck('total', 'level')
-            ->all();
+        // Commission accumulée par membre L1 (générée par ce filleul précis)
+        $commissionPerMember = $user->referralCommissions()
+            ->where('level', 1)
+            ->selectRaw('referred_id, SUM(amount) as total')
+            ->groupBy('referred_id')
+            ->pluck('total', 'referred_id');
+
+        $totalCommissionL1 = $commissionPerMember->sum();
 
         return view('client.team', [
             'user' => $user,
             'level1' => $level1,
-            'level2' => $level2,
-            'level3' => $level3,
-            'commissionTotals' => $commissionTotals,
+            'commissionPerMember' => $commissionPerMember,
+            'totalCommissionL1' => $totalCommissionL1,
         ]);
     }
+
 
     public function showVipPlans(Request $request)
     {
@@ -155,26 +155,26 @@ class DashboardController extends Controller
         return back()->with('success', 'Gain journalier crédité sur votre Main Balance.');
     }
 
-   public function showMyVips(Request $request)
-{
-    $user = $request->user();
-    $investments = $user->investments()->orderBy('created_at', 'desc')->get();
+    public function showMyVips(Request $request)
+    {
+        $user = $request->user();
+        $investments = $user->investments()->orderBy('created_at', 'desc')->get();
 
-    foreach ($investments as $investment) {
-        $lastClaim = DailyClaim::where('investment_id', $investment->id)
-            ->latest('claimed_at')
-            ->first();
+        foreach ($investments as $investment) {
+            $lastClaim = DailyClaim::where('investment_id', $investment->id)
+                ->latest('claimed_at')
+                ->first();
 
-        $investment->next_claim_at = $lastClaim
-            ? $lastClaim->claimed_at->addHours(24)
-            : null;
+            $investment->next_claim_at = $lastClaim
+                ? $lastClaim->claimed_at->addHours(24)
+                : null;
+        }
+
+        return view('client.my-vips', [
+            'user' => $user,
+            'investments' => $investments,
+        ]);
     }
-
-    return view('client.my-vips', [
-        'user' => $user,
-        'investments' => $investments,
-    ]);
-}
 
     public function claimInvestmentGains(Request $request, Investment $investment)
     {
