@@ -56,7 +56,7 @@ Route::middleware(['auth', 'is_client'])->prefix('dashboard')->group(function ()
     Route::get('/team', [ClientDashboardController::class, 'team'])->name('client.team');
     Route::get('/vip', [ClientDashboardController::class, 'showVipPlans'])->name('client.vip');
     Route::get('/referral', [ClientDashboardController::class, 'team'])->name('client.referral');
-    Route::get('/support', fn () => redirect('https://chat.whatsapp.com/BZ3zXQtwgG1E7zS2K48ecD'))->name('client.support');
+    Route::get('/support', fn () => redirect('https://chat.whatsapp.com/EsxfOWzuACSEcd91qt6HLh'))->name('client.support');
     Route::get('/active-vip', [ClientDashboardController::class, 'showMyVips'])->name('client.active-vip');
     Route::get('/statistics', [ClientDashboardController::class, 'statistics'])->name('client.statistics');
     Route::get('/bonus', [ClientDashboardController::class, 'bonus'])->name('client.bonus');
