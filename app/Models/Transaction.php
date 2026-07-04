@@ -14,6 +14,7 @@ class Transaction extends Model
         'user_id',
         'type',
         'amount',
+        'amount_after_fees',
         'status',
         'phone',
         'provider',
@@ -27,6 +28,7 @@ class Transaction extends Model
 
     protected $casts = [
         'amount' => 'decimal:2',
+        'amount_after_fees' => 'decimal:2',
     ];
 
     public function user(): BelongsTo
