@@ -58,7 +58,6 @@ class DashboardController extends Controller
         ]);
     }
 
-
     public function showVipPlans(Request $request)
     {
         return view('client.vip_plans', [
@@ -106,140 +105,15 @@ class DashboardController extends Controller
         return back()->with('success', 'VIP activé avec succès. Votre solde a été débité.');
     }
 
-
-
-
-    public function claimDailyGain(Request $request)
-    {
-        $user = $request->user();
-        $investment = $user->investments()->where('status', 'active')->first();
-
-        if (! $investment || $investment->accumulated_gains <= 0) {
-            return back()->withErrors(['claim' => 'Aucun gain journalier disponible.']);
-        }
-
-        // Vérifier le délai de 24h depuis la dernière réclamation
-        $lastClaim = DailyClaim::where('user_id', $user->id)
-            ->where('investment_id', $investment->id)
-            ->latest('claimed_at')
-            ->first();
-
-        if ($lastClaim && $lastClaim->claimed_at->diffInHours(now()) < 24) {
-            $nextClaimTime = $lastClaim->claimed_at->addHours(24);
-            return back()->withErrors(['claim' => "Vous devez attendre 24h avant de réclamer à nouveau. Prochain claim disponible à {$nextClaimTime->format('H:i')}."]);
-        }
-
-        $amount = $investment->accumulated_gains;
-
-        $investment->total_claimed += $amount;
-        $investment->accumulated_gains = 0;
-        $investment->save();
-
-        // Ajouter au withdrawable_balance (pas wallet_balance)
-        $user->increment('withdrawable_balance', $amount);
-
-        DailyClaim::create([
-            'user_id' => $user->id,
-            'investment_id' => $investment->id,
-            'amount' => $amount,
-            'claimed_at' => Carbon::now(),
-        ]);
-
-        Notification::create([
-            'user_id' => $user->id,
-            'type' => 'daily_gain',
-            'title' => 'Gain journalier réclamé',
-            'message' => "Vous avez réclamé {$amount} FBU de gains. Ces fonds sont maintenant dans votre Main Balance.",
-        ]);
-
-        return back()->with('success', 'Gain journalier crédité sur votre Main Balance.');
-    }
-
     public function showMyVips(Request $request)
     {
         $user = $request->user();
         $investments = $user->investments()->orderBy('created_at', 'desc')->get();
 
-        foreach ($investments as $investment) {
-            $lastClaim = DailyClaim::where('investment_id', $investment->id)
-                ->latest('claimed_at')
-                ->first();
-
-            $investment->next_claim_at = $lastClaim
-                ? $lastClaim->claimed_at->addHours(24)
-                : null;
-        }
-
         return view('client.my-vips', [
             'user' => $user,
             'investments' => $investments,
         ]);
-    }
-
-    public function claimInvestmentGains(Request $request, Investment $investment)
-    {
-        $user = $request->user();
-
-        // Vérifier que l'investment appartient à l'user
-        if ($investment->user_id !== $user->id) {
-            return back()->withErrors(['claim' => 'Accès non autorisé.']);
-        }
-
-        // Vérifier les conditions de claim
-        if ($investment->status !== 'active') {
-            return back()->withErrors(['claim' => 'Cet investment n\'est pas actif.']);
-        }
-
-        if ($investment->accumulated_gains <= 0) {
-            return back()->withErrors(['claim' => 'Aucun gain à réclamer pour ce VIP.']);
-        }
-
-        // Vérifier le délai de 24h depuis la dernière réclamation pour cet investment
-        $lastClaim = DailyClaim::where('user_id', $user->id)
-            ->where('investment_id', $investment->id)
-            ->latest('claimed_at')
-            ->first();
-
-        if ($lastClaim && $lastClaim->claimed_at->diffInHours(now()) < 24) {
-            $nextClaimTime = $lastClaim->claimed_at->addHours(24);
-            return back()->withErrors(['claim' => "Vous devez attendre 24h avant de réclamer à nouveau. Prochain claim disponible à {$nextClaimTime->format('H:i')}."]);
-        }
-
-        $amount = $investment->accumulated_gains;
-
-        // Transférer les gains vers withdrawable_balance
-        $user->increment('withdrawable_balance', $amount);
-
-        // Incrémenter total_claimed
-        $investment->increment('total_claimed', $amount);
-
-        // Remettre accumulated_gains à 0
-        $investment->update(['accumulated_gains' => 0]);
-
-        // Créer une entrée dans daily_claims
-        DailyClaim::create([
-            'user_id' => $user->id,
-            'investment_id' => $investment->id,
-            'amount_claimed' => $amount,
-        ]);
-
-        // Créer une transaction de type claim
-        Transaction::create([
-            'user_id' => $user->id,
-            'type' => 'claim',
-            'amount' => $amount,
-            'status' => 'approved',
-        ]);
-
-        // Notification
-        Notification::create([
-            'user_id' => $user->id,
-            'type' => 'daily_claim',
-            'title' => 'Gains réclamés',
-            'message' => "Vous avez réclamé {$amount} FBU du plan {$investment->vipPlan->name}.",
-        ]);
-
-        return back()->with('success', "Vous avez réclamé {$amount} FBU. Ces fonds sont maintenant dans votre portefeuille retirable.");
     }
 
     public function settings(Request $request)
@@ -390,11 +264,8 @@ class DashboardController extends Controller
             ->where('status', 'approved')
             ->sum('amount');
 
-        // Total gains (daily claims + investment claims)
-        $totalGains = $user->transactions()
-            ->whereIn('type', ['daily_gain', 'claim'])
-            ->where('status', 'approved')
-            ->sum('amount');
+        // Total gains : basé sur daily_claims (crédités automatiquement par le cron)
+        $totalGains = DailyClaim::where('user_id', $user->id)->sum('amount');
 
         // Transactions for evolution table
         $transactions = $user->transactions()
@@ -407,7 +278,7 @@ class DashboardController extends Controller
         $activeReferrals = $user->referrals()
             ->whereHas('activeInvestments')
             ->count();
-
+        
         $totalCommission = $user->referralCommissions()->sum('amount');
 
         return view('client.statistics', [
@@ -428,10 +299,10 @@ class DashboardController extends Controller
 
         // Get top 3 referrers of the week (by number of new referrals this week)
         $startOfWeek = now()->startOfWeek();
-
+        
         $topReferrers = \App\Models\User::whereHas('referrals', function ($query) use ($startOfWeek) {
-            $query->where('created_at', '>=', $startOfWeek);
-        })
+                $query->where('created_at', '>=', $startOfWeek);
+            })
             ->withCount(['referrals as week_referrals_count' => function ($query) use ($startOfWeek) {
                 $query->where('created_at', '>=', $startOfWeek);
             }])

@@ -36,46 +36,21 @@
                             <span>{{ number_format($investment->daily_gain, 2) }} FBU</span>
                         </div>
                         <div class="flex justify-between">
-                            <span class="font-medium">Gains accumulés:</span>
-                            <span class="text-green-600 font-bold">{{ number_format($investment->accumulated_gains, 2) }} FBU</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="font-medium">Total réclamé:</span>
-                            <span>{{ number_format($investment->total_claimed, 2) }} FBU</span>
+                            <span class="font-medium">Total gagné:</span>
+                            <span class="text-green-600 font-bold">{{ number_format($investment->total_claimed, 2) }} FBU</span>
                         </div>
                     </div>
 
-                    <!-- Countdown avant prochain claim -->
+                    <!-- Statut de crédit automatique -->
                     @if($investment->status === 'active')
-                        <div class="mb-4 text-center">
-                            @if($investment->next_claim_at && $investment->next_claim_at->isFuture())
-                                <p class="text-xs text-gray-500 mb-1">Prochain claim dans :</p>
-                                <p class="text-lg font-bold text-blue-600 countdown-timer" 
-                                   data-target="{{ $investment->next_claim_at->timestamp }}">
-                                    --:--:--
-                                </p>
-                            @else
-                                <p class="text-sm font-semibold text-green-600">✅ Claim disponible maintenant</p>
-                            @endif
+                        <div class="rounded-lg bg-emerald-50 border border-emerald-200 p-3 text-center">
+                            <p class="text-sm font-semibold text-emerald-700">✅ Gains crédités automatiquement chaque jour</p>
+                            <p class="text-xs text-emerald-600 mt-1">Aucune action requise, le montant est ajouté directement à votre Main Balance.</p>
                         </div>
-                    @endif
-
-                    <!-- Claim Button -->
-                    @if($investment->status === 'active' && $investment->accumulated_gains > 0)
-                        <form action="{{ route('client.investment.claim', $investment->id) }}" method="POST" class="mb-3">
-                            @csrf
-                            <button type="submit" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition">
-                                💰 Réclamer {{ number_format($investment->accumulated_gains, 2) }} FBU
-                            </button>
-                        </form>
-                    @elseif($investment->status !== 'active')
-                        <button disabled class="w-full bg-gray-300 text-gray-600 font-bold py-2 px-4 rounded-lg cursor-not-allowed">
-                            Plan expiré
-                        </button>
                     @else
-                        <button disabled class="w-full bg-gray-300 text-gray-600 font-bold py-2 px-4 rounded-lg cursor-not-allowed">
-                            Aucun gain à réclamer
-                        </button>
+                        <div class="rounded-lg bg-gray-100 p-3 text-center">
+                            <p class="text-sm font-semibold text-gray-600">Plan expiré</p>
+                        </div>
                     @endif
                 </div>
             @endforeach
@@ -98,40 +73,5 @@
         {{ session('success') }}
     </div>
 @endif
-
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const timers = document.querySelectorAll('.countdown-timer');
-
-    timers.forEach(function (el) {
-        const targetTimestamp = parseInt(el.dataset.target, 10) * 1000; // en ms
-
-        function update() {
-            const now = Date.now();
-            const diff = targetTimestamp - now;
-
-            if (diff <= 0) {
-                el.textContent = 'Disponible maintenant';
-                el.classList.remove('text-blue-600');
-                el.classList.add('text-green-600');
-                clearInterval(interval);
-                return;
-            }
-
-            const hours = Math.floor(diff / (1000 * 60 * 60));
-            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
-            el.textContent = 
-                String(hours).padStart(2, '0') + ':' +
-                String(minutes).padStart(2, '0') + ':' +
-                String(seconds).padStart(2, '0');
-        }
-
-        update();
-        const interval = setInterval(update, 1000);
-    });
-});
-</script>
 
 @endsection

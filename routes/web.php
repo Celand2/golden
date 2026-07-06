@@ -71,8 +71,6 @@ Route::middleware(['auth', 'is_client'])->prefix('dashboard')->group(function ()
     Route::put('/settings/password', [ClientDashboardController::class, 'updatePassword'])->name('client.settings.password');
     Route::get('/vip-plans', [ClientDashboardController::class, 'showVipPlans'])->name('client.vip-plans');
     Route::post('/vip-plans/{vipPlan}/invest', [ClientDashboardController::class, 'investVipPlan'])->name('client.vip-plans.invest');
-    Route::post('/claim', [ClientDashboardController::class, 'claimDailyGain'])->name('client.claim');
-    Route::post('/investments/{investment}/claim', [ClientDashboardController::class, 'claimInvestmentGains'])->name('client.investment.claim');
     
     // Notifications
     Route::get('/notifications', [ClientNotificationController::class, 'index'])->name('client.notifications');
@@ -80,6 +78,7 @@ Route::middleware(['auth', 'is_client'])->prefix('dashboard')->group(function ()
     Route::post('/notifications/read-all', [ClientNotificationController::class, 'markAllAsRead'])->name('client.notifications.read-all');
     Route::post('/notifications/{notification}/delete', [ClientNotificationController::class, 'delete'])->name('client.notification.delete');
 });
+
 Route::get('/cron/process-daily-gains', function (\Illuminate\Http\Request $request) {
     if ($request->query('token') !== config('app.cron_secret_token')) {
         abort(403);

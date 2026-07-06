@@ -2,18 +2,22 @@
 
 namespace App\Console\Commands;
 
+use App\Models\DailyClaim;
 use App\Models\Investment;
 use App\Models\Notification;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class ProcessDailyGains extends Command
 {
     protected $signature = 'process:daily-gains';
-    protected $description = 'Expire les VIP échus et accumule les gains journaliers dus (24h depuis la création ou le dernier accrual).';
+    protected $description = 'Expire les VIP échus et crédite automatiquement les gains journaliers dus (24h depuis la création ou le dernier accrual) directement au Main Balance.';
 
     public function handle(): int
     {
+        \Log::info('process:daily-gains exécuté à ' . now());
+
         $now = Carbon::now();
         $expiredCount = 0;
         $accrualCount = 0;
@@ -53,17 +57,35 @@ class ProcessDailyGains extends Command
                         }
 
                         $nextDue = $investment->nextAccrualDue();
+                        $gain = $investment->daily_gain;
 
-                        $investment->accumulated_gains += $investment->daily_gain;
-                        $investment->last_accrual_at = $nextDue;
-                        $investment->save();
+                        DB::transaction(function () use ($investment, $gain, $nextDue) {
+                            // Créditer directement le Main Balance (withdrawable_balance)
+                            DB::table('users')
+                                ->where('id', $investment->user_id)
+                                ->increment('withdrawable_balance', $gain);
+
+                            // Historique : total_claimed reflète maintenant le total crédité automatiquement
+                            $investment->total_claimed += $gain;
+                            $investment->last_accrual_at = $nextDue;
+                            $investment->save();
+
+                            // Garder une trace dans daily_claims (utilisé aussi pour la règle de retrait)
+                            DailyClaim::create([
+                                'user_id' => $investment->user_id,
+                                'investment_id' => $investment->id,
+                                'amount' => $gain,
+                                'claimed_at' => $nextDue,
+                            ]);
+                        });
+
                         $accrualCount++;
 
                         Notification::create([
                             'user_id' => $investment->user_id,
                             'type' => 'daily_gain',
-                            'title' => 'Gain journalier disponible',
-                            'message' => "Votre gain journalier de {$investment->daily_gain} FBU est disponible.",
+                            'title' => 'Gain journalier crédité',
+                            'message' => "Votre gain journalier de {$gain} FBU a été automatiquement crédité à votre Main Balance.",
                         ]);
                     }
                 }
