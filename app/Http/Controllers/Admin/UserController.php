@@ -73,12 +73,12 @@ class UserController extends Controller
         return redirect()->route('admin.users.index')->with('success', 'Utilisateur mis à jour.');
     }
 
-    public function destroy(User $user)
-    {
-        $user->delete();
+   public function destroy(User $user)
+{
+    $user->delete();
 
-        return redirect()->route('users.index')->with('success', 'Utilisateur supprimé.');
-    }
+    return redirect()->route('admin.users.index')->with('success', 'Utilisateur supprimé.');
+}
 
     public function resetPassword(Request $request, User $user)
     {
